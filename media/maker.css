@@ -1,0 +1,19 @@
+body {
+  display: flex;
+}
+nav {
+  width: 20dvw;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: var(--bg-0);
+  box-sizing: border-box;
+}
+nav a {
+  display: flex;
+  align-items: center;
+  color: var(--text-1);
+}
+main {
+  width: 80dvw;
+}

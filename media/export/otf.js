@@ -1,6 +1,7 @@
 // https://learn.microsoft.com/en-us/typography/opentype/spec/otff
 
 const align4 = (x)=>(x+3) & ~3;
+const fl2 = (x)=>Math.floor(Math.log2(x));
 
 function getChecksum(view, offset, length) {
   let sum = 0;
@@ -33,31 +34,55 @@ const tableGen = {
     offset += 2;
 
     let subtableIdxStart = offset;
-    if (has4subtable) {
+    let subtable = (encoding)=>{
       view.setUint16(offset, 0, false); // platformID
-      offset += 2;
-      view.setUint16(offset, 3, false); // encodingID
-      offset += 2;
-      view.setUint32(offset, 12, false); // subtableOffset
-      offset += 4;
-    }
-    if (has12subtable) {
-      view.setUint16(offset, 0, false); // platformID
-      offset += 2;
-      view.setUint16(offset, 4, false); // encodingID
-      offset += 2;
-      view.setUint32(offset, 12, false); // subtableOffset
-      offset += 4;
-    }
-    if (has14subtable) {
-      view.setUint16(offset, 0, false); // platformID
-      offset += 2;
-      view.setUint16(offset, 5, false); // encodingID
-      offset += 2;
-      view.setUint32(offset, 12, false); // subtableOffset
-      offset += 4;
-    }
+      view.setUint16(offset+2, encoding, false); // encodingID
+      view.setUint32(offset+4, 0, false); // subtableOffset (Temp)
+      offset += 8;
+    };
+    if (has4subtable) subtable(3);
+    if (has12subtable) subtable(4);
+    if (has14subtable) subtable(5);
 
+    if (has4subtable) {
+      view.setUint16(offset, 4, false); // format
+      view.setUint16(offset+2, 0, false); // TODO: length
+      view.setUint16(offset+4, 0, false); // language
+      offset += 6;
+      let segCount = 0; // TODO: What is this
+      let entrySelector = fl2(segCount);
+      let searchRange = (1<<entrySelector)*2;
+      view.setUint16(offset, segCount*2, false); // segCountX2
+      view.setUint16(offset+2, searchRange, false); // searchRange
+      view.setUint16(offset+4, entrySelector, false); // entrySelector
+      view.setUint16(offset+6, segCount*2-searchRange, false); // rangeShift
+      offset += 8;
+      for (let i=0; i<segCount; i++) {
+        view.setUint16(offset, 0, false); // TODO: endCode
+        offset += 2;
+      }
+      view.setUint16(offset, 0, false); // reserved
+      offset += 2;
+      for (let i=0; i<segCount; i++) {
+        view.setUint16(offset, 0, false); // TODO: startCode
+        offset += 2;
+      }
+      for (let i=0; i<segCount; i++) {
+        view.setInt16(offset, 0, false); // TODO: idDelta
+        offset += 2;
+      }
+      for (let i=0; i<segCount; i++) {
+        view.setUint16(offset, 0, false); // TODO: idRangeOffset
+        offset += 2;
+      }
+/*
+uint16	endCode[segCount]	End characterCode for each segment, last=0xFFFF.
+uint16	reservedPad	Set to 0.
+uint16	startCode[segCount]	Start character code for each segment.
+int16	idDelta[segCount]	Delta for all character codes in segment.
+uint16	idRangeOffset[segCount]	Offsets into glyphIdArray or 0
+uint16	glyphIdArray[ ]	Glyph index array (arbitrary length)*/
+    }
     /*view.setUint16(offset, 14, false); // format
     offset += 2;
     view.setUint32(offset, 0, false); // TODO: length
@@ -92,20 +117,16 @@ export function generateOTF(glyphs, substitutions) {
   ];
   if (substitutions.length) tables.push('GSUB')
 
-  let entrySelector = Math.floor(Math.log2(tables.length));
+  let entrySelector = fl2(tables.length);
   let searchRange = (1<<entrySelector)*16;
   let rangeShift = tables.length*16-searchRange;
 
   view.setUint32(offset, 0x00010000, false); // sfntVersion (currently set for TrueType outlines)
-  offset += 4;
-  view.setUint16(offset, tables.length, false); // numTables
-  offset += 2;
-  view.setUint16(offset, searchRange, false); // searchRange
-  offset += 2;
-  view.setUint16(offset, entrySelector, false); // entrySelector
-  offset += 2;
-  view.setUint16(offset, rangeShift, false); // rangeShift
-  offset += 2;
+  view.setUint16(offset+4, tables.length, false); // numTables
+  view.setUint16(offset+6, searchRange, false); // searchRange
+  view.setUint16(offset+8, entrySelector, false); // entrySelector
+  view.setUint16(offset+10, rangeShift, false); // rangeShift
+  offset += 12;
 
   const directoryStart = offset;
   for (let i=0; i<tables.length; i++) {
@@ -114,11 +135,9 @@ export function generateOTF(glyphs, substitutions) {
 
     // Temp data
     view.setUint32(offset, 0, false);
-    offset += 4;
-    view.setUint32(offset, 0, false);
-    offset += 4;
-    view.setUint32(offset, 0, false);
-    offset += 4;
+    view.setUint32(offset+4, 0, false);
+    view.setUint32(offset+8, 0, false);
+    offset += 12;
   }
 
   for (let i=0; i<tables.length; i++) {

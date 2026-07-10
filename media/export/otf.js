@@ -94,14 +94,36 @@ int16	yMax	Maximum y for coordinate data.*/
   },
   maxp: (view, offset, settings, glyphs, substitutions)=>offset,
   name: (view, offset, settings, glyphs, substitutions)=>{
+    let tableStart = offset;
     view.setUint16(offset, 1, false); // version
-/*.
-uint16	count	Number of name records.
-Offset16	storageOffset	Offset to start of string storage (from start of table).
-NameRecord	nameRecord[count]	The name records where count is the number of records.
-uint16	langTagCount	Number of language-tag records.
-LangTagRecord	langTagRecord[langTagCount]	The language-tag records where langTagCount is the number of records.
-(Variable)		Storage for the actual string data.*/
+    let count = (settings.family.length>0)+(settings.subfamily.length>0)+(settings.version.length>0)+(settings.copyright.length>0)+(settings.designer.length>0)+(settings.desc.length>0)+(settings.license.length>0)+(settings.sample.length>0);
+    view.setUint16(offset+2, count, false); // count
+    view.setUint16(offset+4, 0, false); // storageOffset (temp)
+    offset += 6;
+    let recordStarts = [];
+    let putPlat = (id, len)=>{
+      recordStarts.push(offset);
+      view.setUint16(offset, 0, false); // platformID
+      view.setUint16(offset+2, 4, false); // encodingID
+      view.setUint16(offset+4, 0, false); // languageID
+      view.setUint16(offset+6, id, false); // nameID
+      view.setUint16(offset+8, len, false); // length
+      view.setUint16(offset+10, 0, false); // stringOffset (temp)
+      offset += 12;
+    };
+    if (settings.family.length>0) putPlat(1, settings.family.length);
+    if (settings.subfamily.length>0) putPlat(2, settings.subfamily.length);
+    if (settings.family.length>0&&settings.subfamily.length>0) putPlat(4, settings.family.length+settings.subfamily.length+1);
+    if (settings.version.length>0) putPlat(5, settings.version.length);
+    if (settings.copyright.length>0) putPlat(0, settings.copyright.length);
+    if (settings.designer.length>0) putPlat(9, settings.designer.length);
+    if (settings.desc.length>0) putPlat(10, settings.desc.length);
+    if (settings.license.length>0) putPlat(13, settings.license.length);
+    if (settings.sample.length>0) putPlat(19, settings.sample.length);
+    view.setUint16(offset, 0, false); // langTagCount (languages aren't real)
+    offset += 2;
+    view.setUint16(tableStart+4, offset-tableStart, false);
+    // TODO: Store the strings
     return offset;
   },
   'OS/2': (view, offset, settings, glyphs, substitutions)=>offset,

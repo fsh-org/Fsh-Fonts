@@ -147,7 +147,20 @@ int16	yMax	Maximum y for coordinate data.*/
   hhea: (view, offset, settings, glyphs, substitutions)=>offset,
   hmtx: (view, offset, settings, glyphs, substitutions)=>offset,
   loca: (view, offset, settings, glyphs, substitutions)=>offset,
-  post: (view, offset, glyphs, substitutions)=>offset
+  post: (view, offset, settings, glyphs, substitutions)=>{
+    view.setUint32(offset, 0x30000, false); // version
+    view.setInt16(offset+4, Math.trunc(settings.italicAngle), false); // italicAngle
+    view.setUint16(offset+6, parseInt(settings.italicAngle.toString().split('.')[1]), false);
+    view.setInt16(offset+8, Math.trunc(settings.underlinePosition), false); // underlinePosition
+    view.setInt16(offset+10, Math.trunc(settings.underlineThickness), false); // underlineThickness
+    view.setUint32(offset+12, settings.monospaced?0:1, false); // isFixedPitch
+    view.setUint32(offset+16, 0, false); // minMemType42
+    view.setUint32(offset+20, 0, false); // maxMemType42
+    view.setUint32(offset+24, 0, false); // minMemType1
+    view.setUint32(offset+28, 0, false); // maxMemType1
+    offset += 32;
+    return offset;
+  }
 };
 
 export function generateOTF(settings, glyphs, substitutions) {

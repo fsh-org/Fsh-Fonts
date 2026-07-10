@@ -4,12 +4,11 @@ window.showPage = (page)=>document.querySelectorAll('main > div').forEach(page=>
 window.showPage('settings');
 
 // Glyphs
-let glyphs = [];
+let glyphs = [{ name: '.notdef', char: '', glyf: '' }];
 let substitutions = [];
 function showGlyphLists() {
   let disp = (gl)=>`<div>
-  <!--img src="${gl.glyf}"-->
-  <span>${fl.glyf}</span>
+  <span>${gl.glyf}</span>
   <span>${gl.name}</span>
 </div>`;
   document.getElementById('glyph-list').innerHTML = glyphs.map(disp).join('');
@@ -23,15 +22,22 @@ window.createGlyph = ()=>{
     alert('Only one grapheme allowed');
     return;
   }
+  if (glyphs.findIndex(gl=>gl.char===char)!==-1) {
+    alert('Glyph for that char already defined');
+    return;
+  }
   glyphs.push({
     name: char,
+    char: char,
     glyf: ''
   });
   showGlyphLists();
 };
 window.createSub = ()=>{
+  let charseq = prompt('Character sequence');
   substitutions.push({
-    name: prompt('Character sequence'),
+    name: charseq,
+    char: charseq,
     glyf: ''
   });
   showGlyphLists();
@@ -39,9 +45,6 @@ window.createSub = ()=>{
 showGlyphLists();
 
 // Export
-window.exportShow = ()=>{
-  document.getElementById('export-modal').showModal();
-};
 window.exportFont = ()=>{
   generateOTF(glyphs, substitutions);
 };

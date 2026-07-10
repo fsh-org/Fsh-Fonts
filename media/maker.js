@@ -1,6 +1,6 @@
 import { generateOTF } from './export/otf.js';
 
-window.showPage = (page)=>document.querySelectorAll('main > div').forEach(page=>page.style.display=page.getAttribute('data-page')===page?'':'none');
+window.showPage = (page)=>document.querySelectorAll('main > div').forEach(div=>div.style.display=(div.getAttribute('data-page')===page)?'':'none');
 window.showPage('settings');
 
 // Glyphs

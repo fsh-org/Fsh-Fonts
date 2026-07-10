@@ -39,11 +39,11 @@ const tableGen = {
       view.setUint32(offset+4, 0, false); // subtableOffset (Temp)
       offset += 8;
     };
-    if (has4subtable) subtable(3);
-    if (has12subtable) subtable(4);
-    if (has14subtable) subtable(5);
+    if (subtable4glyphs.length>0) subtable(3);
+    if (subtable12glyphs.length>0) subtable(4);
+    if (subtable14glyphs.length>0) subtable(5);
 
-    if (has4subtable) {
+    if (subtable4glyphs.length>0) {
       let subtableStart = offset;
       view.setUint16(offset, 4, false); // format
       view.setUint16(offset+2, 0, false); // length (Temp)

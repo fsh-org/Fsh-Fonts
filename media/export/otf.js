@@ -45,6 +45,7 @@ const tableGen = {
     if (has14subtable) subtable(5);
 
     if (has4subtable) {
+      let subtableStart = offset;
       view.setUint16(offset, 4, false); // format
       view.setUint16(offset+2, 0, false); // TODO: length
       view.setUint16(offset+4, 0, false); // language
@@ -57,31 +58,31 @@ const tableGen = {
       view.setUint16(offset+4, entrySelector, false); // entrySelector
       view.setUint16(offset+6, segCount*2-searchRange, false); // rangeShift
       offset += 8;
-      for (let i=0; i<segCount; i++) {
-        view.setUint16(offset, subtable4glyphs[i].codePointAt(0), false); // endCode
+      for (let i=0; i<segCount-1; i++) {
+        view.setUint16(offset, subtable4glyphs[i].name.codePointAt(0), false); // endCode
         offset += 2;
       }
+      view.setUint16(offset, 0xFFFF, false);
+      offset += 2;
       view.setUint16(offset, 0, false); // reserved
       offset += 2;
-      for (let i=0; i<segCount; i++) {
-        view.setUint16(subtable4glyphs[i].codePointAt(0), 0, false); // startCode
+      for (let i=0; i<segCount-1; i++) {
+        view.setUint16(subtable4glyphs[i].name.codePointAt(0), 0, false); // startCode
         offset += 2;
       }
-      for (let i=0; i<segCount; i++) {
-        view.setInt16(offset, 0, false); // TODO: idDelta
+      view.setUint16(offset, 0xFFFF, false);
+      offset += 2;
+      for (let i=0; i<segCount-1; i++) {
+        view.setInt16(offset, (glyphs.findIndex(gl=>gl.name===subtable4glyphs[i].name)-subtable4glyphs[i].name.codePointAt(0)), false); // idDelta
         offset += 2;
       }
+      view.setUint16(offset, 1, false);
+      offset += 2;
       for (let i=0; i<segCount; i++) {
-        view.setUint16(offset, 0, false); // TODO: idRangeOffset
+        view.setUint16(offset, 0, false); // idRangeOffset
         offset += 2;
       }
-/*
-uint16	endCode[segCount]	End characterCode for each segment, last=0xFFFF.
-uint16	reservedPad	Set to 0.
-uint16	startCode[segCount]	Start character code for each segment.
-int16	idDelta[segCount]	Delta for all character codes in segment.
-uint16	idRangeOffset[segCount]	Offsets into glyphIdArray or 0
-uint16	glyphIdArray[ ]	Glyph index array (arbitrary length)*/
+      subtableStart
     }
     /*view.setUint16(offset, 14, false); // format
     offset += 2;

@@ -46,5 +46,14 @@ showGlyphLists();
 
 // Export
 window.exportFont = ()=>{
-  generateOTF(glyphs, substitutions);
+  generateOTF({
+    family: document.getElementById('string-family').value,
+    subfamily: document.getElementById('string-subfamily').value,
+    version: document.getElementById('string-version').value,
+    copyright: document.getElementById('string-copyright').value,
+    designer: document.getElementById('string-designer').value,
+    desc: document.getElementById('string-desc').value,
+    license: document.getElementById('string-license').value,
+    sample: document.getElementById('string-sample').value
+  }, glyphs, substitutions);
 };

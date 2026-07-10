@@ -26,12 +26,6 @@
     <link rel="stylesheet" href="./media/maker.css">
   </head>
   <body>
-    <dialog id="export-modal">
-      <select>
-        <option>OTF</option>
-      </select>
-      <button onclick="window.exportFont()">Download</button>
-    </dialog>
     <nav>
       <a>
         <img src="https://fsh.plus/fsh.png" width="50" height="50" alt="Fsh logo">
@@ -39,7 +33,7 @@
       </a>
       <button onclick="window.showPage('settings')">Settings</button>
       <button onclick="window.showPage('glyphs')">Glyphs</button>
-      <button onclick="window.exportShow()">Export</button>
+      <button onclick="window.showPage('export')">Export</button>
     </nav>
     <main>
       <div data-page="settings">
@@ -56,6 +50,12 @@
           <button onclick="window.createSub()">+</button>
         </div>
         <div class="list" id="sub-list"></div>
+      </div>
+      <div data-page="export">
+        <select id="export-type">
+          <option value="otf">OpenType (OTF)</option>
+        </select>
+        <button onclick="window.exportFont()">Download</button>
       </div>
     </main>
     <script src="./media/maker.js" type="module"></script>

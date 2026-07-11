@@ -39,9 +39,9 @@
       <div data-page="settings">
         <strong>Style</strong><br>
         <label>Italic angle: <input id="style-italicAngle" type="number" value="-12.5" min="-360" max="360"></label><br>
-        <label>Underline position: <input id="style-underlinePosition" type="number"></label><br>
-        <label>Underline thickness: <input id="style-underlineThickness" type="number"></label><br>
-        <label>Monospaced: <input id="style-monospaced" type="checkbox"></label><br>
+        <label>Underline position: <input id="style-underlinePosition" type="number" value="100"></label><br>
+        <label>Underline thickness: <input id="style-underlineThickness" type="number" value="1" min="0" max="1000"></label><br>
+        <label>Monospaced: <input id="style-monospaced" type="checkbox"></label><br><br>
         <strong>Strings</strong><br>
         <label>Family: <input id="string-family" placeholder="Fontex"></label><br>
         <label>Subfamily: <input id="string-subfamily" placeholder="Regular"></label><br>
@@ -69,6 +69,7 @@
           <option value="otf">OpenType (OTF)</option>
         </select>
         <button onclick="window.exportFont()">Download</button>
+        <p id="export-view"></p>
       </div>
     </main>
     <script src="./media/maker.js" type="module"></script>

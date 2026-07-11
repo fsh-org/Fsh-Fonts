@@ -140,8 +140,8 @@ const tableGen = {
       view.setUint32(offset, glyphStarts[i]-glyfStart, false);
       offset += 4;
     }
-    glyfStart = null;
-    glyphStarts = null;
+    glyfStart = 0;
+    glyphStarts = [];
     return offset;
   },
   maxp: (view, offset, settings, glyphs, substitutions)=>{
@@ -149,7 +149,7 @@ const tableGen = {
     let maxPoints = 0;
     let maxContours = 0;
     glyphs.forEach(gl=>{
-      if (gl.glyf.length>maxPoints) maxPoints = glyf.glyf.length;
+      if (gl.glyf.length>maxPoints) maxPoints = gl.glyf.length;
       let countours = 0;
       gl.glyf.forEach(pt=>{
         if (pt.countourEnd) countours++;

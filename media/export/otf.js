@@ -86,13 +86,79 @@ const tableGen = {
     return offset;
   },
   glyf: (view, offset, settings, glyphs, substitutions)=>{
-/*int16	numberOfContours	If the number of contours is greater than or equal to zero, this is a simple glyph. If negative, this is a composite glyph — the value -1 should be used for composite glyphs.
-int16	xMin	Minimum x for coordinate data.
-int16	yMin	Minimum y for coordinate data.
-int16	xMax	Maximum x for coordinate data.
-int16	yMax	Maximum y for coordinate data.*/
+    for (let i=0; i<glyphs.length; i++) {
+      let minX = 0;
+      let minY = 0;
+      let maxX = 0;
+      let maxY = 0;
+      let countourEnds = [];
+      glyphs[i].glyf.forEach((pt,idx)=>{
+        if (pt.x<minX) minX = pt.x;
+        if (pt.x>maxX) maxX = pt.x;
+        if (pt.y<minY) minY = pt.y;
+        if (pt.y>maxY) maxY = pt.y;
+        if (pt.countourEnd) countourEnds.push(idx);
+      });
+      view.setInt16(offset, countourEnds.length, false); // numberOfContours
+      view.setInt16(offset+2, minX, false); // xMin
+      view.setInt16(offset+4, minY, false); // yMin
+      view.setInt16(offset+6, maxX, false); // xMax
+      view.setInt16(offset+8, maxY, false); // yMax
+      offset += 10;
+      for (let j=0; j<countourEnds.length; j++) {
+        view.setUint16(offset, countourEnds[j], false);
+        offset += 2;
+      }
+      view.setUint16(offset, 0, false); // instructionLength (hinting quite hard)
+      offset += 2;
+      for (let j=0; j<glyphs[i].glyf.length; j++) {
+        view.setUint8(offset, glyphs[i].glyf[j].onCurve?1:0);
+        offset++;
+      }
+      let previous = 0;
+      for (let j=0; j<glyphs[i].glyf.length; j++) {
+        view.setInt16(offset, glyphs[i].glyf[j].x-previous, false);
+        previous = glyphs[i].glyf[j].x;
+        offset += 2;
+      }
+      previous = 0;
+      for (let j=0; j<glyphs[i].glyf.length; j++) {
+        view.setInt16(offset, glyphs[i].glyf[j].y-previous, false);
+        previous = glyphs[i].glyf[j].y;
+        offset += 2;
+      }
+    }
   },
-  maxp: (view, offset, settings, glyphs, substitutions)=>offset,
+  maxp: (view, offset, settings, glyphs, substitutions)=>{
+    view.setUint32(offset, 0x10000, false); // version
+    view.setUint16(offset+4, glyphs.length, false); // numGlyphs
+    // TODO: Everything below
+    view.setUint16(offset+6, 0, false); // maxPoints
+    view.setUint16(offset+8, 0, false); // maxContours
+    view.setUint16(offset+10, 0, false); // maxCompositePoints
+    view.setUint16(offset+12, 0, false); // maxCompositeContours
+    view.setUint16(offset+14, 0, false); // maxZones
+    view.setUint16(offset+16, 0, false); // maxTwilightPoints
+    view.setUint16(offset+18, 0, false); // maxStorage
+    view.setUint16(offset+20, 0, false); // maxFunctionDefs
+    view.setUint16(offset+22, 0, false); // maxInstructionDefs
+    view.setUint16(offset+24, 0, false); // maxStackElements
+    view.setUint16(offset+26, 0, false); // maxSizeOfInstructions
+    view.setUint16(offset+28, 0, false); // maxComponentElements
+    view.setUint16(offset+30, 0, false); // maxComponentDepth
+    offset += 32;
+/*
+uint16	maxZones	1 if instructions do not use the twilight zone (Z0), or 2 if instructions do use Z0; should be set to 2 in most cases.
+uint16	maxTwilightPoints	Maximum points used in Z0.
+uint16	maxStorage	Number of Storage Area locations.
+uint16	maxFunctionDefs	Number of FDEFs, equal to the highest function number + 1.
+uint16	maxInstructionDefs	Number of IDEFs.
+uint16	maxStackElements	Maximum stack depth across Font Program ('fpgm' table), CVT Program ('prep' table) and all glyph instructions (in the 'glyf' table).
+uint16	maxSizeOfInstructions	Maximum byte count for glyph instructions.
+uint16	maxComponentElements	Maximum number of components referenced at “top level” for any composite glyph.
+uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
+    return offset;
+  },
   name: (view, offset, settings, glyphs, substitutions)=>{
     let tableStart = offset;
     view.setUint16(offset, 1, false); // version

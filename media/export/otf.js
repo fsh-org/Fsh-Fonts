@@ -262,24 +262,35 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     view.setInt16(offset+4, Math.ceil(glyfsdata.widthSum/glyfsdata.widthCount), false); // xAvgCharWidth
     view.setUint16(offset+6, settings.weight, false); // usWeightClass
     view.setUint16(offset+8, settings.width, false); // usWidthClass
-    offset += 10;
-/*uint16	fsType	
-FWORD	ySubscriptXSize	
-FWORD	ySubscriptYSize	
-FWORD	ySubscriptXOffset	
-FWORD	ySubscriptYOffset	
-FWORD	ySuperscriptXSize	
-FWORD	ySuperscriptYSize	
-FWORD	ySuperscriptXOffset	
-FWORD	ySuperscriptYOffset	
-FWORD	yStrikeoutSize	
-FWORD	yStrikeoutPosition	
-int16	sFamilyClass	
-uint8	panose[10]	
-uint32	ulUnicodeRange1	Bits 0 – 31
-uint32	ulUnicodeRange2	Bits 32 – 63
-uint32	ulUnicodeRange3	Bits 64 – 95
-uint32	ulUnicodeRange4	Bits 96 – 127
+    view.setUint16(offset+10, 0, false); // fsType (Sharing is caring)
+    view.setInt16(offset+12, settings.subXSize, false); // ySubscriptXSize
+    view.setInt16(offset+14, settings.subYSize, false); // ySubscriptYSize
+    view.setInt16(offset+16, settings.subXOff, false); // ySubscriptXOffset
+    view.setInt16(offset+18, settings.subYOff, false); // ySubscriptYOffset
+    view.setInt16(offset+20, settings.supXSize, false); // ySuperscriptXSize
+    view.setInt16(offset+22, settings.supYSize, false); // ySuperscriptYSize
+    view.setInt16(offset+24, settings.supXOff, false); // ySuperscriptXOffset
+    view.setInt16(offset+26, settings.supYOff, false); // ySuperscriptYOffset
+    view.setInt16(offset+28, settings.strikeThickness, false); // yStrikeoutSize
+    view.setInt16(offset+30, settings.strikePosition, false); // yStrikeoutPosition
+    view.setInt16(offset+32, 0, false); // TODO: sFamilyClass
+    // TODO: panose
+    view.setUint8(offset+34, 0, false);
+    view.setUint8(offset+35, 0, false);
+    view.setUint8(offset+36, 0, false);
+    view.setUint8(offset+37, 0, false);
+    view.setUint8(offset+38, 0, false);
+    view.setUint8(offset+39, 0, false);
+    view.setUint8(offset+40, 0, false);
+    view.setUint8(offset+41, 0, false);
+    view.setUint8(offset+42, 0, false);
+    view.setUint8(offset+43, 0, false);
+    view.setUint32(offset+44, 0, false); // TODO: ulUnicodeRange1
+    view.setUint32(offset+48, 0, false); // TODO: ulUnicodeRange2
+    view.setUint32(offset+52, 0, false); // TODO: ulUnicodeRange3
+    view.setUint32(offset+56, 0, false); // TODO: ulUnicodeRange4
+    offset += 60;
+/*
 Tag	achVendID	
 uint16	fsSelection	
 uint16	usFirstCharIndex	
@@ -320,7 +331,6 @@ Bit 1: Left sidebearing point at x=0 (relevant only for TrueType rasterizers).
     view.setInt16(offset+38, glyfsdata.minY, false); // yMin
     view.setInt16(offset+40, glyfsdata.maxX, false); // xMax
     view.setInt16(offset+42, glyfsdata.maxY, false); // yMax
-    tglyfs = [0, 0, 0, 0];
     view.setUint16(offset+44, (settings.weight>650?1:0)+(settings.italic?2:0)+(settings.underline?4:0)+(settings.outline?8:0)+(settings.shadow?16:0)+(settings.width<4?32:0)+(settings.width>6?64:0), false); // macStyle
     view.setUint16(offset+46, 0, false); // TODO: lowestRecPPEM
     view.setInt16(offset+48, 2, false); // fontDirectionHint

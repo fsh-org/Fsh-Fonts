@@ -75,10 +75,23 @@ window.exportFont = ()=>{
     underline: document.getElementById('style-underline').checked,
     underlinePosition: document.getElementById('style-underlinePosition').value,
     underlineThickness: document.getElementById('style-underlineThickness').value,
+    strikePosition: document.getElementById('style-strikePosition').value,
+    strikeThickness: document.getElementById('style-strikeThickness').value,
     outline: document.getElementById('style-outline').checked,
     shadow: document.getElementById('style-shadow').checked,
     width: document.getElementById('style-width').value,
     monospaced: document.getElementById('style-monospaced').checked,
+    subXSize: document.getElementById('style-subXSize').value,
+    subYSize: document.getElementById('style-subYSize').value,
+    subXOff: document.getElementById('style-subXOff').value,
+    subYOff: document.getElementById('style-subYOff').value,
+    supXSize: document.getElementById('style-supXSize').value,
+    supYSize: document.getElementById('style-supYSize').value,
+    supXOff: document.getElementById('style-supXOff').value,
+    supYOff: document.getElementById('style-supYOff').value,
+    ascender: document.getElementById('style-ascender').value,
+    descender: document.getElementById('style-descender').value,
+    linegap: document.getElementById('style-linegap').value,
 
     family: document.getElementById('string-family').value,
     subfamily: document.getElementById('string-subfamily').value,
@@ -87,7 +100,9 @@ window.exportFont = ()=>{
     designer: document.getElementById('string-designer').value,
     desc: document.getElementById('string-desc').value,
     license: document.getElementById('string-license').value,
-    sample: document.getElementById('string-sample').value
+    sample: document.getElementById('string-sample').value,
+
+    tag: document.getElementById('tag').value
   }, glyphs, substitutions);
 
   let uint8Array = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);

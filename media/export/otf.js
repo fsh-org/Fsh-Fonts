@@ -290,21 +290,25 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     view.setUint32(offset+48, 0, false);
     view.setUint32(offset+52, 0, false);
     view.setUint32(offset+56, 0, false);
-    offset += 60;
+    // achVendID
+    view.setUint8(offset+60, settings.tag.charCodeAt(0));
+    view.setUint8(offset+61, settings.tag.charCodeAt(1));
+    view.setUint8(offset+62, settings.tag.charCodeAt(2));
+    view.setUint8(offset+63, settings.tag.charCodeAt(3));
+    view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0), false); // fsSelection
+    offset += 64;
 /*
-Tag	achVendID	
-uint16	fsSelection	
 uint16	usFirstCharIndex	
 uint16	usLastCharIndex	
-FWORD	sTypoAscender	
-FWORD	sTypoDescender	
-FWORD	sTypoLineGap	
-UFWORD	usWinAscent	
-UFWORD	usWinDescent	
+int16	sTypoAscender	
+int16	sTypoDescender	
+int16	sTypoLineGap	
+uint16	usWinAscent	
+uint16	usWinDescent	
 uint32	ulCodePageRange1	Bits 0 – 31
 uint32	ulCodePageRange2	Bits 32 – 63
-FWORD	sxHeight	
-FWORD	sCapHeight	
+int16	sxHeight	
+int16	sCapHeight	
 uint16	usDefaultChar	
 uint16	usBreakChar	
 uint16	usMaxContext	
@@ -398,6 +402,7 @@ export function generateOTF(settings, glyphs, substitutions) {
     widthSum: 0,
     widthCount: 0
   };
+  settings.tag = 'FSH ';
   for (let i=0; i<tables.length; i++) {
     offset = align4(offset);
     let start = offset;

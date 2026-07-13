@@ -50,7 +50,7 @@ const tableGen = {
       view.setUint16(offset+2, 0, false); // length (Temp)
       view.setUint16(offset+4, 0, false); // language
       offset += 6;
-      let segCount = subtable4glyphs.length; // Optimize segments if you want, but im not doing that
+      let segCount = subtable4glyphs.length+1; // Optimize segments if you want, but im not doing that
       let entrySelector = fl2(segCount);
       let searchRange = (1<<entrySelector)*2;
       view.setUint16(offset, segCount*2, false); // segCountX2
@@ -58,7 +58,7 @@ const tableGen = {
       view.setUint16(offset+4, entrySelector, false); // entrySelector
       view.setUint16(offset+6, segCount*2-searchRange, false); // rangeShift
       offset += 8;
-      for (let i=1; i<segCount; i++) {
+      for (let i=0; i<segCount-1; i++) {
         let code = subtable4glyphs[i].char.codePointAt(0);
         if (code>glyfsdata.lastchar) glyfsdata.lastchar = code;
         view.setUint16(offset, code, false); // endCode
@@ -68,7 +68,7 @@ const tableGen = {
       offset += 2;
       view.setUint16(offset, 0, false); // reserved
       offset += 2;
-      for (let i=1; i<segCount; i++) {
+      for (let i=0; i<segCount-1; i++) {
         let code = subtable4glyphs[i].char.codePointAt(0);
         if (code<glyfsdata.firstchar) glyfsdata.firstchar = code;
         view.setUint16(offset, code, false); // startCode
@@ -76,7 +76,7 @@ const tableGen = {
       }
       view.setUint16(offset, 0xFFFF, false);
       offset += 2;
-      for (let i=1; i<segCount; i++) {
+      for (let i=0; i<segCount-1; i++) {
         view.setInt16(offset, (glyphs.findIndex(gl=>gl.char===subtable4glyphs[i].char)-subtable4glyphs[i].char.codePointAt(0)), false); // idDelta
         offset += 2;
       }
@@ -96,10 +96,10 @@ const tableGen = {
     glyfStart = offset;
     for (let i=0; i<glyphs.length; i++) {
       glyphStarts.push(offset);
-      let minX = glyphs[i].glyf[0].x;
-      let minY = glyphs[i].glyf[0].y;
-      let maxX = glyphs[i].glyf[0].x;
-      let maxY = glyphs[i].glyf[0].y;
+      let minX = glyphs[i].glyf[0]?.x||0;
+      let minY = glyphs[i].glyf[0]?.y||0;
+      let maxX = glyphs[i].glyf[0]?.x||0;
+      let maxY = glyphs[i].glyf[0]?.y||0;
       let countourEnds = [];
       glyphs[i].glyf.forEach((pt,idx)=>{
         if (pt.x<minX) minX = pt.x;
@@ -321,9 +321,8 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
   head: (view, offset, settings, glyphs, substitutions)=>{
     view.setUint16(offset, 1, false); // majorVersion
     view.setUint16(offset+2, 0, false); // minorVersion
-    let version = (settings.version||'Version 1.0').split(' ').slice(-1)[0].split('.');
-    view.setInt16(offset+4, parseInt(version[0]||'1'), false); // fontRevision
-    view.setUint16(offset+6, parseInt(version[1]||'0'), false); // fontRevision
+    let version = parseFloat((settings.version||'Version 1.0').split(' ').slice(-1)[0])||1;
+    view.setInt32(offset+4, Math.round(version * 65536), false); // fontRevision
     view.setUint32(offset+8, 0, false); // TODO: checksumAdjustment
     view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
     view.setUint16(offset+16, 0, false); // TODO: flags

@@ -59,7 +59,9 @@ const tableGen = {
       view.setUint16(offset+6, segCount*2-searchRange, false); // rangeShift
       offset += 8;
       for (let i=1; i<segCount; i++) {
-        view.setUint16(offset, subtable4glyphs[i].char.codePointAt(0), false); // endCode
+        let code = subtable4glyphs[i].char.codePointAt(0);
+        if (code>glyfsdata.lastchar) glyfsdata.lastchar = code;
+        view.setUint16(offset, code, false); // endCode
         offset += 2;
       }
       view.setUint16(offset, 0xFFFF, false);
@@ -67,7 +69,9 @@ const tableGen = {
       view.setUint16(offset, 0, false); // reserved
       offset += 2;
       for (let i=1; i<segCount; i++) {
-        view.setUint16(subtable4glyphs[i].char.codePointAt(0), 0, false); // startCode
+        let code = subtable4glyphs[i].char.codePointAt(0);
+        if (code<glyfsdata.firstchar) glyfsdata.firstchar = code;
+        view.setUint16(offset, code, false); // startCode
         offset += 2;
       }
       view.setUint16(offset, 0xFFFF, false);
@@ -285,7 +289,7 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     view.setUint8(offset+41, 0, false);
     view.setUint8(offset+42, 0, false);
     view.setUint8(offset+43, 0, false);
-    // ulUnicodeRange (not needed)
+    // TODO: ulUnicodeRange (not needed for now)
     view.setUint32(offset+44, 0, false);
     view.setUint32(offset+48, 0, false);
     view.setUint32(offset+52, 0, false);
@@ -295,25 +299,24 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     view.setUint8(offset+61, settings.tag.charCodeAt(1));
     view.setUint8(offset+62, settings.tag.charCodeAt(2));
     view.setUint8(offset+63, settings.tag.charCodeAt(3));
-    view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0), false); // fsSelection
-    offset += 64;
-/*
-uint16	usFirstCharIndex	
-uint16	usLastCharIndex	
-int16	sTypoAscender	
-int16	sTypoDescender	
-int16	sTypoLineGap	
-uint16	usWinAscent	
-uint16	usWinDescent	
-uint32	ulCodePageRange1	Bits 0 – 31
-uint32	ulCodePageRange2	Bits 32 – 63
-int16	sxHeight	
-int16	sCapHeight	
-uint16	usDefaultChar	
-uint16	usBreakChar	
-uint16	usMaxContext	
-uint16	usLowerOpticalPointSize	
-uint16	usUpperOpticalPointSize*/
+    view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0), false)+128; // fsSelection
+    view.setUint16(offset+66, Math.min(glyfsdata.firstchar, 0xFFFF), false); // usFirstCharIndex
+    view.setUint16(offset+68, Math.max(glyfsdata.firstchar, glyfsdata.lastchar), false); // usLastCharIndex
+    view.setInt16(offset+70, settings.ascender, false); // sTypoAscender
+    view.setInt16(offset+72, settings.descender, false); // sTypoDescender
+    view.setInt16(offset+74, settings.linegap, false); // sTypoLineGap
+    view.setUint16(offset+76, glyfsdata.maxY, false); // usWinAscent
+    view.setUint16(offset+78, glyfsdata.minY, false); // usWinDescent
+    view.setUint32(offset+80, 0, false); // TODO: ulCodePageRange1 (0 is acceptable for now)
+    view.setUint32(offset+84, 0, false); // TODO: ulCodePageRange2
+    view.setInt16(offset+88, 0, false); // TODO: sxHeight
+    view.setInt16(offset+90, 0, false); // TODO: sCapHeight
+    view.setUint16(offset+92, 0, false); // usDefaultChar
+    view.setUint16(offset+94, 20, false); // usBreakChar
+    view.setUint16(offset+96, 2, false); // TODO: usMaxContext
+    view.setUint16(offset+98, 0, false); // TODO: usLowerOpticalPointSize
+    view.setUint16(offset+100, 0, false); // TODO: usUpperOpticalPointSize
+    offset += 102;
     return offset;
   },
   head: (view, offset, settings, glyphs, substitutions)=>{
@@ -400,7 +403,9 @@ export function generateOTF(settings, glyphs, substitutions) {
     minY: 0,
     maxY: 0,
     widthSum: 0,
-    widthCount: 0
+    widthCount: 0,
+    firstchar: 0xFFFF,
+    lastchar: 0
   };
   settings.tag = 'FSH ';
   for (let i=0; i<tables.length; i++) {

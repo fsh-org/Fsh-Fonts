@@ -20,8 +20,6 @@ function getChecksum(view, offset, length) {
 }
 
 // Tables
-let glyfStart = 0;
-let glyphStarts = [];
 let glyfsdata;
 const tableGen = {
   cmap: (view, offset, settings, glyphs, substitutions)=>{
@@ -89,9 +87,9 @@ const tableGen = {
     return offset;
   },
   glyf: (view, offset, settings, glyphs, substitutions)=>{
-    glyfStart = offset;
+    glyfsdata.glyfStart = offset;
     for (let i=0; i<glyphs.length; i++) {
-      glyphStarts.push(offset);
+      glyfsdata.glyphStarts.push(offset);
       let countourEnds = glyfsdata.bound[i].countourEnds;
       view.setInt16(offset, countourEnds.length, false); // numberOfContours
       view.setInt16(offset+2, 0, false); // xMin
@@ -122,16 +120,14 @@ const tableGen = {
         offset += 2;
       }
     }
-    glyphStarts.push(offset);
+    glyfsdata.glyphStarts.push(offset);
     return offset;
   },
   loca: (view, offset, settings, glyphs, substitutions)=>{
-    for (let i=0; i<glyphStarts.length; i++) {
-      view.setUint32(offset, glyphStarts[i]-glyfStart, false);
+    for (let i=0; i<glyfsdata.glyphStarts.length; i++) {
+      view.setUint32(offset, glyfsdata.glyphStarts[i]-glyfsdata.glyfStart, false);
       offset += 4;
     }
-    glyfStart = 0;
-    glyphStarts = [];
     return offset;
   },
   maxp: (view, offset, settings, glyphs, substitutions)=>{
@@ -339,10 +335,10 @@ uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     view.setInt16(offset+4, settings.ascender, false); // ascender
     view.setInt16(offset+6, settings.descender, false); // descender
     view.setInt16(offset+8, settings.linegap, false); // lineGap
-    view.setUint16(offset+10, 0, false); // TODO: advanceWidthMax
+    view.setUint16(offset+10, glyfsdata.maxWidth, false); // advanceWidthMax
     view.setInt16(offset+12, 0, false); // minLeftSideBearing
-    view.setInt16(offset+14, 0, false); // TODO: minRightSideBearing
-    view.setInt16(offset+16, 0, false); // TODO: xMaxExtent
+    view.setInt16(offset+14, 0, false); // minRightSideBearing (aw-xMax)
+    view.setInt16(offset+16, glyfsdata.maxWidth, false); // xMaxExtent
     view.setInt16(offset+18, 0, false); // TODO: caretSlopeRise
     view.setInt16(offset+20, 0, false); // TODO: caretSlopeRun
     view.setInt16(offset+22, 0, false); // TODO: caretOffset
@@ -351,9 +347,6 @@ uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     view.setUint16(offset+34, glyphs.length, false); // numberOfHMetrics
     offset += 36;
 /*
-uint16	advanceWidthMax	Maximum advance width value in 'hmtx' table.
-int16	minRightSideBearing	Minimum right sidebearing value; calculated as min(aw - (lsb + xMax - xMin)) for glyphs with contours (empty glyphs should be ignored).
-int16	xMaxExtent	Max(lsb + (xMax - xMin)).
 int16	caretSlopeRise	Used to calculate the slope of the cursor (rise/run); 1 for vertical.
 int16	caretSlopeRun	0 for vertical.
 int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts*/
@@ -396,7 +389,8 @@ export function generateOTF(settings, glyphs, substitutions) {
   glyfsdata = {
     bound: [],
     minX: 0, maxX: 0, minY: 0, maxY: 0,
-    widthSum: 0, widthCount: 0,
+    glyfStart: 0, glyphStarts: [],
+    maxWidth: 0, widthSum: 0, widthCount: 0,
     firstchar: 0xFFFF, lastchar: 0
   };
   settings.tag ??= 'FSH ';
@@ -428,6 +422,7 @@ export function generateOTF(settings, glyphs, substitutions) {
     if (maxX>0) {
       glyfsdata.widthSum += maxX;
       glyfsdata.widthCount++;
+      if (maxX>glyfsdata.maxWidth) glyfsdata.maxWidth = maxX;
     }
     if (glyphs[i].char.length<1) continue;
     let code = glyphs[i].char.codePointAt(0);

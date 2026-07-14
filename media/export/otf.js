@@ -349,8 +349,35 @@ uint16	unitsPerEm	Set to a value from 16 to 16384. Any value in this range is va
 uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     return offset;
   },
-  hhea: (view, offset, settings, glyphs, substitutions)=>offset,
   hmtx: (view, offset, settings, glyphs, substitutions)=>offset,
+  hhea: (view, offset, settings, glyphs, substitutions)=>{
+    view.setUint16(offset, 1, false); // majorVersion
+    view.setUint16(offset+2, 0, false); // minorVersion
+    view.setInt16(offset+4, settings.ascender, false); // ascender
+    view.setInt16(offset+6, settings.descender, false); // descender
+    view.setInt16(offset+8, settings.linegap, false); // lineGap
+    view.setUint16(offset+10, 0, false); // TODO: advanceWidthMax
+    view.setInt16(offset+12, 0, false); // TODO: minLeftSideBearing
+    view.setInt16(offset+14, 0, false); // TODO: minRightSideBearing
+    view.setInt16(offset+16, 0, false); // TODO: xMaxExtent
+    view.setInt16(offset+18, 0, false); // TODO: caretSlopeRise
+    view.setInt16(offset+20, 0, false); // TODO: caretSlopeRun
+    view.setInt16(offset+22, 0, false); // TODO: caretOffset
+    view.setBigInt64(offset+24, 0n, false); // Reserved
+    view.setInt16(offset+32, 0, false); // metricDataFormatun
+    view.setUint16(offset+34, 0, false); // TODO: numberOfHMetrics
+    offset += 36;
+/*
+uint16	advanceWidthMax	Maximum advance width value in 'hmtx' table.
+int16	minLeftSideBearing	Minimum left sidebearing value in 'hmtx' table for glyphs with contours (empty glyphs should be ignored).
+int16	minRightSideBearing	Minimum right sidebearing value; calculated as min(aw - (lsb + xMax - xMin)) for glyphs with contours (empty glyphs should be ignored).
+int16	xMaxExtent	Max(lsb + (xMax - xMin)).
+int16	caretSlopeRise	Used to calculate the slope of the cursor (rise/run); 1 for vertical.
+int16	caretSlopeRun	0 for vertical.
+int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts
+uint16	numberOfHMetrics	Number of hMetric entries in 'hmtx' table*/
+    return offset;
+  },
   GSUB: (view, offset, settings, glyphs, substitutions)=>offset
 };
 
@@ -368,8 +395,8 @@ export function generateOTF(settings, glyphs, substitutions) {
     'post',
     'OS/2',
     'head',
-    'hhea',
-    'hmtx'
+    'hmtx',
+    'hhea'
   ];
   if (substitutions.length) tables.push('GSUB')
 

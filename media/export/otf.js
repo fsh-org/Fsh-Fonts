@@ -92,12 +92,12 @@ const tableGen = {
     glyfStart = offset;
     for (let i=0; i<glyphs.length; i++) {
       glyphStarts.push(offset);
-      let countourEnds = glyfsdata.char[glyphs[i].char].countourEnds;
+      let countourEnds = glyfsdata.bound[i].countourEnds;
       view.setInt16(offset, countourEnds.length, false); // numberOfContours
       view.setInt16(offset+2, 0, false); // xMin
-      view.setInt16(offset+4, glyfsdata.char[glyphs[i].char].minY, false); // yMin
-      view.setInt16(offset+6, glyfsdata.char[glyphs[i].char].maxX, false); // xMax
-      view.setInt16(offset+8, glyfsdata.char[glyphs[i].char].maxY, false); // yMax
+      view.setInt16(offset+4, glyfsdata.bound[i].minY, false); // yMin
+      view.setInt16(offset+6, glyfsdata.bound[i].maxX, false); // xMax
+      view.setInt16(offset+8, glyfsdata.bound[i].maxY, false); // yMax
       offset += 10;
       for (let j=0; j<countourEnds.length; j++) {
         view.setUint16(offset, countourEnds[j], false);
@@ -327,7 +327,7 @@ uint16	lowestRecPPEM	Smallest readable size in pixels.*/
   },
   hmtx: (view, offset, settings, glyphs, substitutions)=>{
     for (let i=0; i<glyphs.length; i++) {
-      view.setUint16(offset, glyfsdata.char[glyphs[i].char].maxX, false); // advanceWidth
+      view.setUint16(offset, glyfsdata.bound[i].maxX, false); // advanceWidth
       view.setInt16(offset+2, 0, false); // lsb
       offset += 4;
     }
@@ -368,18 +368,18 @@ export function generateOTF(settings, glyphs, substitutions) {
   let offset = 0;
 
   let tables = [
+    'OS/2',
     'cmap',
     'glyf',
+    'head',
+    'hmtx', // TODO: swap htmx and hhea
+    'hhea',
     'loca',
     'maxp',
     'name',
-    'post',
-    'OS/2',
-    'head',
-    'hmtx',
-    'hhea'
+    'post'
   ];
-  if (substitutions.length) tables.push('GSUB')
+  if (substitutions.length) tables.unshift('GSUB')
 
   let entrySelector = fl2(tables.length);
   let searchRange = (1<<entrySelector)*16;
@@ -394,7 +394,7 @@ export function generateOTF(settings, glyphs, substitutions) {
 
   // Data & Precompute
   glyfsdata = {
-    char : {},
+    bound: [],
     minX: 0, maxX: 0, minY: 0, maxY: 0,
     widthSum: 0, widthCount: 0,
     firstchar: 0xFFFF, lastchar: 0
@@ -421,7 +421,7 @@ export function generateOTF(settings, glyphs, substitutions) {
       });
       maxX -= minX;
     }
-    glyfsdata.char[glyphs[i].char] = { minY, maxX, maxY, countourEnds };
+    glyfsdata.bound.push({ minY, maxX, maxY, countourEnds });
     if (minY<glyfsdata.minY) glyfsdata.minY = minY;
     if (maxX>glyfsdata.maxX) glyfsdata.maxX = maxX;
     if (maxY>glyfsdata.maxY) glyfsdata.maxY = maxY;

@@ -59,9 +59,7 @@ const tableGen = {
       view.setUint16(offset+6, segCount*2-searchRange, false); // rangeShift
       offset += 8;
       for (let i=0; i<segCount-1; i++) {
-        let code = subtable4glyphs[i].char.codePointAt(0);
-        if (code>glyfsdata.lastchar) glyfsdata.lastchar = code;
-        view.setUint16(offset, code, false); // endCode
+        view.setUint16(offset, subtable4glyphs[i].char.codePointAt(0), false); // endCode
         offset += 2;
       }
       view.setUint16(offset, 0xFFFF, false);
@@ -69,9 +67,7 @@ const tableGen = {
       view.setUint16(offset, 0, false); // reserved
       offset += 2;
       for (let i=0; i<segCount-1; i++) {
-        let code = subtable4glyphs[i].char.codePointAt(0);
-        if (code<glyfsdata.firstchar) glyfsdata.firstchar = code;
-        view.setUint16(offset, code, false); // startCode
+        view.setUint16(offset, subtable4glyphs[i].char.codePointAt(0), false); // startCode
         offset += 2;
       }
       view.setUint16(offset, 0xFFFF, false);
@@ -96,31 +92,12 @@ const tableGen = {
     glyfStart = offset;
     for (let i=0; i<glyphs.length; i++) {
       glyphStarts.push(offset);
-      let minX = glyphs[i].glyf[0]?.x||0;
-      let minY = glyphs[i].glyf[0]?.y||0;
-      let maxX = glyphs[i].glyf[0]?.x||0;
-      let maxY = glyphs[i].glyf[0]?.y||0;
-      let countourEnds = [];
-      glyphs[i].glyf.forEach((pt,idx)=>{
-        if (pt.x<minX) minX = pt.x;
-        if (pt.x>maxX) maxX = pt.x;
-        if (pt.y<minY) minY = pt.y;
-        if (pt.y>maxY) maxY = pt.y;
-        if (pt.countourEnd) countourEnds.push(idx);
-      });
-      if (minX<glyfsdata.minX) glyfsdata.minX = minX;
-      if (minY<glyfsdata.minY) glyfsdata.minY = minY;
-      if (maxX>glyfsdata.maxX) glyfsdata.maxX = maxX;
-      if (maxY>glyfsdata.maxY) glyfsdata.maxY = maxY;
-      if (maxX-minX>0) {
-        glyfsdata.widthSum += maxX-minX;
-        glyfsdata.widthCount++;
-      }
+      let countourEnds = glyfsdata.char[glyphs[i].char].countourEnds;
       view.setInt16(offset, countourEnds.length, false); // numberOfContours
-      view.setInt16(offset+2, minX, false); // xMin
-      view.setInt16(offset+4, minY, false); // yMin
-      view.setInt16(offset+6, maxX, false); // xMax
-      view.setInt16(offset+8, maxY, false); // yMax
+      view.setInt16(offset+2, 0, false); // xMin
+      view.setInt16(offset+4, glyfsdata.char[glyphs[i].char].minY, false); // yMin
+      view.setInt16(offset+6, glyfsdata.char[glyphs[i].char].maxX, false); // xMax
+      view.setInt16(offset+8, glyfsdata.char[glyphs[i].char].maxY, false); // yMax
       offset += 10;
       for (let j=0; j<countourEnds.length; j++) {
         view.setUint16(offset, countourEnds[j], false);
@@ -294,10 +271,10 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     view.setUint32(offset+52, 0, false);
     view.setUint32(offset+56, 0, false);
     // achVendID
-    view.setUint8(offset+60, settings.tag.charCodeAt(0));
-    view.setUint8(offset+61, settings.tag.charCodeAt(1));
-    view.setUint8(offset+62, settings.tag.charCodeAt(2));
-    view.setUint8(offset+63, settings.tag.charCodeAt(3));
+    view.setUint8(offset+60, settings.tag.codePointAt(0));
+    view.setUint8(offset+61, settings.tag.codePointAt(1));
+    view.setUint8(offset+62, settings.tag.codePointAt(2));
+    view.setUint8(offset+63, settings.tag.codePointAt(3));
     view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0)+128, false); // fsSelection
     view.setUint16(offset+66, Math.min(glyfsdata.firstchar, 0xFFFF), false); // usFirstCharIndex
     view.setUint16(offset+68, Math.max(glyfsdata.firstchar, glyfsdata.lastchar), false); // usLastCharIndex
@@ -325,10 +302,9 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     view.setInt32(offset+4, Math.round(version * 65536), false); // fontRevision
     view.setUint32(offset+8, 0, false); // TODO: checksumAdjustment
     view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
-    view.setUint16(offset+16, 0, false); // TODO: flags
+    view.setUint16(offset+16, 2, false); // TODO: flags
 /*
 Bit 0: Baseline for font at y=0.
-Bit 1: Left sidebearing point at x=0 (relevant only for TrueType rasterizers).
 */
     view.setUint16(offset+18, 256, false); // TODO: unitsPerEm
     view.setBigInt64(offset+20, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // created
@@ -349,7 +325,14 @@ uint16	unitsPerEm	Set to a value from 16 to 16384. Any value in this range is va
 uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     return offset;
   },
-  hmtx: (view, offset, settings, glyphs, substitutions)=>offset,
+  hmtx: (view, offset, settings, glyphs, substitutions)=>{
+    for (let i=0; i<glyphs.length; i++) {
+      view.setUint16(offset, glyfsdata.char[glyphs[i].char].maxX, false); // advanceWidth
+      view.setInt16(offset+2, 0, false); // lsb
+      offset += 4;
+    }
+    return offset;
+  },
   hhea: (view, offset, settings, glyphs, substitutions)=>{
     view.setUint16(offset, 1, false); // majorVersion
     view.setUint16(offset+2, 0, false); // minorVersion
@@ -357,7 +340,7 @@ uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     view.setInt16(offset+6, settings.descender, false); // descender
     view.setInt16(offset+8, settings.linegap, false); // lineGap
     view.setUint16(offset+10, 0, false); // TODO: advanceWidthMax
-    view.setInt16(offset+12, 0, false); // TODO: minLeftSideBearing
+    view.setInt16(offset+12, 0, false); // minLeftSideBearing
     view.setInt16(offset+14, 0, false); // TODO: minRightSideBearing
     view.setInt16(offset+16, 0, false); // TODO: xMaxExtent
     view.setInt16(offset+18, 0, false); // TODO: caretSlopeRise
@@ -365,17 +348,15 @@ uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     view.setInt16(offset+22, 0, false); // TODO: caretOffset
     view.setBigInt64(offset+24, 0n, false); // Reserved
     view.setInt16(offset+32, 0, false); // metricDataFormatun
-    view.setUint16(offset+34, 0, false); // TODO: numberOfHMetrics
+    view.setUint16(offset+34, glyphs.length, false); // numberOfHMetrics
     offset += 36;
 /*
 uint16	advanceWidthMax	Maximum advance width value in 'hmtx' table.
-int16	minLeftSideBearing	Minimum left sidebearing value in 'hmtx' table for glyphs with contours (empty glyphs should be ignored).
 int16	minRightSideBearing	Minimum right sidebearing value; calculated as min(aw - (lsb + xMax - xMin)) for glyphs with contours (empty glyphs should be ignored).
 int16	xMaxExtent	Max(lsb + (xMax - xMin)).
 int16	caretSlopeRise	Used to calculate the slope of the cursor (rise/run); 1 for vertical.
 int16	caretSlopeRun	0 for vertical.
-int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts
-uint16	numberOfHMetrics	Number of hMetric entries in 'hmtx' table*/
+int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts*/
     return offset;
   },
   GSUB: (view, offset, settings, glyphs, substitutions)=>offset
@@ -411,9 +392,53 @@ export function generateOTF(settings, glyphs, substitutions) {
   view.setUint16(offset+10, rangeShift, false); // rangeShift
   offset += 12;
 
+  // Data & Precompute
+  glyfsdata = {
+    char : {},
+    minX: 0, maxX: 0, minY: 0, maxY: 0,
+    widthSum: 0, widthCount: 0,
+    firstchar: 0xFFFF, lastchar: 0
+  };
+  settings.tag ??= 'FSH ';
+
+  for (let i=0; i<glyphs.length; i++) {
+    let minX = glyphs[i].glyf[0]?.x||0;
+    let minY = glyphs[i].glyf[0]?.y||0;
+    let maxX = glyphs[i].glyf[0]?.x||0;
+    let maxY = glyphs[i].glyf[0]?.y||0;
+    let countourEnds = [];
+    glyphs[i].glyf.forEach((pt,idx)=>{
+      if (pt.x<minX) minX = pt.x;
+      if (pt.x>maxX) maxX = pt.x;
+      if (pt.y<minY) minY = pt.y;
+      if (pt.y>maxY) maxY = pt.y;
+      if (pt.countourEnd) countourEnds.push(idx);
+    });
+    if (minX!==0) {
+      glyphs[i].glyf = glyphs[i].glyf.map(pt=>{
+        pt.x -= minX;
+        return pt;
+      });
+      maxX -= minX;
+    }
+    glyfsdata.char[glyphs[i].char] = { minY, maxX, maxY, countourEnds };
+    if (minY<glyfsdata.minY) glyfsdata.minY = minY;
+    if (maxX>glyfsdata.maxX) glyfsdata.maxX = maxX;
+    if (maxY>glyfsdata.maxY) glyfsdata.maxY = maxY;
+    if (maxX>0) {
+      glyfsdata.widthSum += maxX;
+      glyfsdata.widthCount++;
+    }
+    if (glyphs[i].char.length<1) continue;
+    let code = glyphs[i].char.codePointAt(0);
+    if (code>glyfsdata.lastchar) glyfsdata.lastchar = code;
+    if (code<glyfsdata.firstchar) glyfsdata.firstchar = code;
+  }
+
+  // Tables
   const directoryStart = offset;
   for (let i=0; i<tables.length; i++) {
-    for (let j=0; j<4; j++) view.setUint8(offset+j, tables[i].charCodeAt(j));
+    for (let j=0; j<4; j++) view.setUint8(offset+j, tables[i].codePointAt(j));
     offset += 4;
 
     // Temp data
@@ -423,17 +448,6 @@ export function generateOTF(settings, glyphs, substitutions) {
     offset += 12;
   }
 
-  glyfsdata = {
-    minX: 0,
-    maxX: 0,
-    minY: 0,
-    maxY: 0,
-    widthSum: 0,
-    widthCount: 0,
-    firstchar: 0xFFFF,
-    lastchar: 0
-  };
-  settings.tag = 'FSH ';
   for (let i=0; i<tables.length; i++) {
     offset = align4(offset);
     let start = offset;

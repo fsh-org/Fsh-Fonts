@@ -190,7 +190,7 @@ const tableGen = {
     view.setUint16(offset+2, 0, false); // minorVersion
     let version = parseFloat((settings.version||'Version 1.0').split(' ').slice(-1)[0])||1;
     view.setInt32(offset+4, Math.round(version * 65536), false); // fontRevision
-    view.setUint32(offset+8, 0, false); // TODO: checksumAdjustment
+    view.setUint32(offset+8, 0, false); // checksumAdjustment (temp)
     view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
     view.setUint16(offset+16, 2, false); // TODO: flags
 /*Bit 0: Baseline for font at y=0.*/
@@ -268,8 +268,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     view.setUint16(offset+8, maxContours, false); // maxContours
     view.setUint16(offset+10, 0, false); // maxCompositePoints
     view.setUint16(offset+12, 0, false); // maxCompositeContours
-    // TODO: Everything below
-    view.setUint16(offset+14, 0, false); // maxZones
+    view.setUint16(offset+14, 1, false); // maxZones
     view.setUint16(offset+16, 0, false); // maxTwilightPoints
     view.setUint16(offset+18, 0, false); // maxStorage
     view.setUint16(offset+20, 0, false); // maxFunctionDefs
@@ -279,16 +278,6 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     view.setUint16(offset+28, 0, false); // maxComponentElements
     view.setUint16(offset+30, 0, false); // maxComponentDepth
     offset += 32;
-/*
-uint16	maxZones	1 if instructions do not use the twilight zone (Z0), or 2 if instructions do use Z0; should be set to 2 in most cases.
-uint16	maxTwilightPoints	Maximum points used in Z0.
-uint16	maxStorage	Number of Storage Area locations.
-uint16	maxFunctionDefs	Number of FDEFs, equal to the highest function number + 1.
-uint16	maxInstructionDefs	Number of IDEFs.
-uint16	maxStackElements	Maximum stack depth across Font Program ('fpgm' table), CVT Program ('prep' table) and all glyph instructions (in the 'glyf' table).
-uint16	maxSizeOfInstructions	Maximum byte count for glyph instructions.
-uint16	maxComponentElements	Maximum number of components referenced at “top level” for any composite glyph.
-uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     return offset;
   },
   name: (view, offset, settings, glyphs, substitutions)=>{
@@ -358,7 +347,7 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
 };
 
 export function generateOTF(settings, glyphs, substitutions) {
-  const buffer = new ArrayBuffer(4096);
+  const buffer = new ArrayBuffer(8192);
   const view = new DataView(buffer);
   let offset = 0;
 
@@ -457,5 +446,9 @@ export function generateOTF(settings, glyphs, substitutions) {
     view.setUint32(headoffset+4, getChecksum(view, start, offset-start), false);
   }
 
-  return view;
+  // File checksum
+  offset = align4(offset);
+  view.setUint32(shareddata.headStart+8, (0xB1B0AFBA - getChecksum(view, 0, offset))>>>0, false);
+
+  return buffer.slice(0, offset);
 }

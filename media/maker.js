@@ -68,7 +68,7 @@ showGlyphLists();
 
 // Export
 window.exportFont = ()=>{
-  let view = generateOTF({
+  let buffer = generateOTF({
     weight: document.getElementById('style-weight').value,
     italic: document.getElementById('style-italic').checked,
     italicAngle: document.getElementById('style-italicAngle').value,
@@ -105,7 +105,7 @@ window.exportFont = ()=>{
     tag: document.getElementById('tag').value
   }, glyphs, substitutions);
 
-  let uint8Array = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+  let uint8Array = new Uint8Array(buffer);
   let decoder = new TextDecoder('utf-8');
   document.getElementById('export-view').innerText = decoder.decode(uint8Array);
 };

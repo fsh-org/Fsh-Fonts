@@ -86,6 +86,7 @@ const tableGen = {
     let subtable12glyphs = glyphs.filter(gl=>gl.char.length===1&&gl.char.codePointAt(0)>0xFFFF);
     let subtable14glyphs = glyphs.filter(gl=>gl.char.length>1);
 
+    let tableStart = offset;
     view.setUint16(offset, 0, false); // version
     view.setUint16(offset+2, (subtable4glyphs.length>0?1:0)+(subtable12glyphs.length>0?1:0)+(subtable14glyphs.length>0?1:0), false); // numTables
     offset += 4;
@@ -102,6 +103,7 @@ const tableGen = {
     if (subtable14glyphs.length>0) subtable(5);
 
     if (subtable4glyphs.length>0) {
+      view.setUint32(subtableIdxStart+4, offset-tableStart, false);
       let subtableStart = offset;
       view.setUint16(offset, 4, false); // format
       view.setUint16(offset+2, 0, false); // length (Temp)

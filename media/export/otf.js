@@ -20,8 +20,67 @@ function getChecksum(view, offset, length) {
 }
 
 // Tables
-let glyfsdata;
+let shareddata;
 const tableGen = {
+  'OS/2': (view, offset, settings, glyphs, substitutions)=>{
+    view.setUint16(offset, 5, false); // version
+    view.setUint16(offset+2, 0, false); // minorVersion
+    view.setInt16(offset+4, Math.ceil(shareddata.widthSum/shareddata.widthCount), false); // xAvgCharWidth
+    view.setUint16(offset+6, settings.weight, false); // usWeightClass
+    view.setUint16(offset+8, settings.width, false); // usWidthClass
+    view.setUint16(offset+10, 0, false); // fsType (Sharing is caring)
+    view.setInt16(offset+12, settings.subXSize, false); // ySubscriptXSize
+    view.setInt16(offset+14, settings.subYSize, false); // ySubscriptYSize
+    view.setInt16(offset+16, settings.subXOff, false); // ySubscriptXOffset
+    view.setInt16(offset+18, settings.subYOff, false); // ySubscriptYOffset
+    view.setInt16(offset+20, settings.supXSize, false); // ySuperscriptXSize
+    view.setInt16(offset+22, settings.supYSize, false); // ySuperscriptYSize
+    view.setInt16(offset+24, settings.supXOff, false); // ySuperscriptXOffset
+    view.setInt16(offset+26, settings.supYOff, false); // ySuperscriptYOffset
+    view.setInt16(offset+28, settings.strikeThickness, false); // yStrikeoutSize
+    view.setInt16(offset+30, settings.strikePosition, false); // yStrikeoutPosition
+    view.setInt16(offset+32, 0, false); // TODO: sFamilyClass
+    // TODO: panose
+    view.setUint8(offset+34, 0, false);
+    view.setUint8(offset+35, 0, false);
+    view.setUint8(offset+36, 0, false);
+    view.setUint8(offset+37, 0, false);
+    view.setUint8(offset+38, 0, false);
+    view.setUint8(offset+39, 0, false);
+    view.setUint8(offset+40, 0, false);
+    view.setUint8(offset+41, 0, false);
+    view.setUint8(offset+42, 0, false);
+    view.setUint8(offset+43, 0, false);
+    // TODO: ulUnicodeRange (not needed for now)
+    view.setUint32(offset+44, 0, false);
+    view.setUint32(offset+48, 0, false);
+    view.setUint32(offset+52, 0, false);
+    view.setUint32(offset+56, 0, false);
+    // achVendID
+    view.setUint8(offset+60, settings.tag.codePointAt(0));
+    view.setUint8(offset+61, settings.tag.codePointAt(1));
+    view.setUint8(offset+62, settings.tag.codePointAt(2));
+    view.setUint8(offset+63, settings.tag.codePointAt(3));
+    view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0)+128, false); // fsSelection
+    view.setUint16(offset+66, Math.min(shareddata.firstchar, 0xFFFF), false); // usFirstCharIndex
+    view.setUint16(offset+68, Math.max(shareddata.firstchar, shareddata.lastchar), false); // usLastCharIndex
+    view.setInt16(offset+70, settings.ascender, false); // sTypoAscender
+    view.setInt16(offset+72, settings.descender, false); // sTypoDescender
+    view.setInt16(offset+74, settings.linegap, false); // sTypoLineGap
+    view.setUint16(offset+76, shareddata.maxY, false); // usWinAscent
+    view.setUint16(offset+78, Math.abs(shareddata.minY), false); // usWinDescent
+    view.setUint32(offset+80, 0, false); // TODO: ulCodePageRange1 (0 is acceptable for now)
+    view.setUint32(offset+84, 0, false); // TODO: ulCodePageRange2
+    view.setInt16(offset+88, 0, false); // TODO: sxHeight
+    view.setInt16(offset+90, 0, false); // TODO: sCapHeight
+    view.setUint16(offset+92, 0, false); // usDefaultChar
+    view.setUint16(offset+94, 0x20, false); // usBreakChar
+    view.setUint16(offset+96, shareddata.maxContext, false); // usMaxContext
+    view.setUint16(offset+98, 0, false); // usLowerOpticalPointSize
+    view.setUint16(offset+100, 0xFFFF, false); // usUpperOpticalPointSize
+    offset += 102;
+    return offset;
+  },
   cmap: (view, offset, settings, glyphs, substitutions)=>{
     let subtable4glyphs = glyphs.filter(gl=>gl.char.length===1&&gl.char.codePointAt(0)<=0xFFFF);
     let subtable12glyphs = glyphs.filter(gl=>gl.char.length===1&&gl.char.codePointAt(0)>0xFFFF);
@@ -82,20 +141,20 @@ const tableGen = {
       }
       view.setUint16(subtableStart+2, offset-subtableStart, false); // length
     }
-    // TODO: Subtables 12/14
+    // TODO: Subtables 12/14 gen
 
     return offset;
   },
   glyf: (view, offset, settings, glyphs, substitutions)=>{
-    glyfsdata.glyfStart = offset;
+    shareddata.glyfStart = offset;
     for (let i=0; i<glyphs.length; i++) {
-      glyfsdata.glyphStarts.push(offset);
-      let countourEnds = glyfsdata.bound[i].countourEnds;
+      shareddata.glyphStarts.push(offset);
+      let countourEnds = shareddata.bound[i].countourEnds;
       view.setInt16(offset, countourEnds.length, false); // numberOfContours
       view.setInt16(offset+2, 0, false); // xMin
-      view.setInt16(offset+4, glyfsdata.bound[i].minY, false); // yMin
-      view.setInt16(offset+6, glyfsdata.bound[i].maxX, false); // xMax
-      view.setInt16(offset+8, glyfsdata.bound[i].maxY, false); // yMax
+      view.setInt16(offset+4, shareddata.bound[i].minY, false); // yMin
+      view.setInt16(offset+6, shareddata.bound[i].maxX, false); // xMax
+      view.setInt16(offset+8, shareddata.bound[i].maxY, false); // yMax
       offset += 10;
       for (let j=0; j<countourEnds.length; j++) {
         view.setUint16(offset, countourEnds[j], false);
@@ -120,12 +179,72 @@ const tableGen = {
         offset += 2;
       }
     }
-    glyfsdata.glyphStarts.push(offset);
+    shareddata.glyphStarts.push(offset);
+    return offset;
+  },
+  head: (view, offset, settings, glyphs, substitutions)=>{
+    shareddata.headStart = offset;
+    view.setUint16(offset, 1, false); // majorVersion
+    view.setUint16(offset+2, 0, false); // minorVersion
+    let version = parseFloat((settings.version||'Version 1.0').split(' ').slice(-1)[0])||1;
+    view.setInt32(offset+4, Math.round(version * 65536), false); // fontRevision
+    view.setUint32(offset+8, 0, false); // TODO: checksumAdjustment
+    view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
+    view.setUint16(offset+16, 2, false); // TODO: flags
+/*Bit 0: Baseline for font at y=0.*/
+    view.setUint16(offset+18, 256, false); // TODO: unitsPerEm
+    view.setBigInt64(offset+20, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // created
+    view.setBigInt64(offset+28, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // modified
+    view.setInt16(offset+36, shareddata.minX, false); // xMin
+    view.setInt16(offset+38, shareddata.minY, false); // yMin
+    view.setInt16(offset+40, shareddata.maxX, false); // xMax
+    view.setInt16(offset+42, shareddata.maxY, false); // yMax
+    view.setUint16(offset+44, (settings.weight>650?1:0)+(settings.italic?2:0)+(settings.underline?4:0)+(settings.outline?8:0)+(settings.shadow?16:0)+(settings.width<4?32:0)+(settings.width>6?64:0), false); // macStyle
+    view.setUint16(offset+46, 0, false); // TODO: lowestRecPPEM
+    view.setInt16(offset+48, 2, false); // fontDirectionHint
+    view.setInt16(offset+50, 1, false); // indexToLocFormat
+    view.setInt16(offset+52, 0, false); // glyphDataFormat
+    offset += 54;
+/*
+uint32	checksumAdjustment	To compute: set it to 0, sum the entire font as uint32, then store 0xB1B0AFBA - sum.
+uint16	unitsPerEm	Set to a value from 16 to 16384. Any value in this range is valid. In fonts that have TrueType outlines, a power of 2 is recommended as this allows performance optimization in some rasterizers.
+uint16	lowestRecPPEM	Smallest readable size in pixels.*/
+    return offset;
+  },
+  hhea: (view, offset, settings, glyphs, substitutions)=>{
+    view.setUint16(offset, 1, false); // majorVersion
+    view.setUint16(offset+2, 0, false); // minorVersion
+    view.setInt16(offset+4, settings.ascender, false); // ascender
+    view.setInt16(offset+6, settings.descender, false); // descender
+    view.setInt16(offset+8, settings.linegap, false); // lineGap
+    view.setUint16(offset+10, shareddata.maxWidth, false); // advanceWidthMax
+    view.setInt16(offset+12, 0, false); // minLeftSideBearing
+    view.setInt16(offset+14, 0, false); // minRightSideBearing (aw-xMax)
+    view.setInt16(offset+16, shareddata.maxWidth, false); // xMaxExtent
+    view.setInt16(offset+18, 0, false); // TODO: caretSlopeRise
+    view.setInt16(offset+20, 0, false); // TODO: caretSlopeRun
+    view.setInt16(offset+22, 0, false); // TODO: caretOffset
+    view.setBigInt64(offset+24, 0n, false); // Reserved
+    view.setInt16(offset+32, 0, false); // metricDataFormatun
+    view.setUint16(offset+34, glyphs.length, false); // numberOfHMetrics
+    offset += 36;
+/*
+int16	caretSlopeRise	Used to calculate the slope of the cursor (rise/run); 1 for vertical.
+int16	caretSlopeRun	0 for vertical.
+int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts*/
+    return offset;
+  },
+  hmtx: (view, offset, settings, glyphs, substitutions)=>{
+    for (let i=0; i<glyphs.length; i++) {
+      view.setUint16(offset, shareddata.bound[i].maxX, false); // advanceWidth
+      view.setInt16(offset+2, 0, false); // lsb
+      offset += 4;
+    }
     return offset;
   },
   loca: (view, offset, settings, glyphs, substitutions)=>{
-    for (let i=0; i<glyfsdata.glyphStarts.length; i++) {
-      view.setUint32(offset, glyfsdata.glyphStarts[i]-glyfsdata.glyfStart, false);
+    for (let i=0; i<shareddata.glyphStarts.length; i++) {
+      view.setUint32(offset, shareddata.glyphStarts[i]-shareddata.glyfStart, false);
       offset += 4;
     }
     return offset;
@@ -232,126 +351,7 @@ uint16	maxComponentDepth	Maximum levels of recursion; 1 for simple components.*/
     offset += 32;
     return offset;
   },
-  'OS/2': (view, offset, settings, glyphs, substitutions)=>{
-    view.setUint16(offset, 5, false); // version
-    view.setUint16(offset+2, 0, false); // minorVersion
-    view.setInt16(offset+4, Math.ceil(glyfsdata.widthSum/glyfsdata.widthCount), false); // xAvgCharWidth
-    view.setUint16(offset+6, settings.weight, false); // usWeightClass
-    view.setUint16(offset+8, settings.width, false); // usWidthClass
-    view.setUint16(offset+10, 0, false); // fsType (Sharing is caring)
-    view.setInt16(offset+12, settings.subXSize, false); // ySubscriptXSize
-    view.setInt16(offset+14, settings.subYSize, false); // ySubscriptYSize
-    view.setInt16(offset+16, settings.subXOff, false); // ySubscriptXOffset
-    view.setInt16(offset+18, settings.subYOff, false); // ySubscriptYOffset
-    view.setInt16(offset+20, settings.supXSize, false); // ySuperscriptXSize
-    view.setInt16(offset+22, settings.supYSize, false); // ySuperscriptYSize
-    view.setInt16(offset+24, settings.supXOff, false); // ySuperscriptXOffset
-    view.setInt16(offset+26, settings.supYOff, false); // ySuperscriptYOffset
-    view.setInt16(offset+28, settings.strikeThickness, false); // yStrikeoutSize
-    view.setInt16(offset+30, settings.strikePosition, false); // yStrikeoutPosition
-    view.setInt16(offset+32, 0, false); // TODO: sFamilyClass
-    // TODO: panose
-    view.setUint8(offset+34, 0, false);
-    view.setUint8(offset+35, 0, false);
-    view.setUint8(offset+36, 0, false);
-    view.setUint8(offset+37, 0, false);
-    view.setUint8(offset+38, 0, false);
-    view.setUint8(offset+39, 0, false);
-    view.setUint8(offset+40, 0, false);
-    view.setUint8(offset+41, 0, false);
-    view.setUint8(offset+42, 0, false);
-    view.setUint8(offset+43, 0, false);
-    // TODO: ulUnicodeRange (not needed for now)
-    view.setUint32(offset+44, 0, false);
-    view.setUint32(offset+48, 0, false);
-    view.setUint32(offset+52, 0, false);
-    view.setUint32(offset+56, 0, false);
-    // achVendID
-    view.setUint8(offset+60, settings.tag.codePointAt(0));
-    view.setUint8(offset+61, settings.tag.codePointAt(1));
-    view.setUint8(offset+62, settings.tag.codePointAt(2));
-    view.setUint8(offset+63, settings.tag.codePointAt(3));
-    view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0)+128, false); // fsSelection
-    view.setUint16(offset+66, Math.min(glyfsdata.firstchar, 0xFFFF), false); // usFirstCharIndex
-    view.setUint16(offset+68, Math.max(glyfsdata.firstchar, glyfsdata.lastchar), false); // usLastCharIndex
-    view.setInt16(offset+70, settings.ascender, false); // sTypoAscender
-    view.setInt16(offset+72, settings.descender, false); // sTypoDescender
-    view.setInt16(offset+74, settings.linegap, false); // sTypoLineGap
-    view.setUint16(offset+76, glyfsdata.maxY, false); // usWinAscent
-    view.setUint16(offset+78, Math.abs(glyfsdata.minY), false); // usWinDescent
-    view.setUint32(offset+80, 0, false); // TODO: ulCodePageRange1 (0 is acceptable for now)
-    view.setUint32(offset+84, 0, false); // TODO: ulCodePageRange2
-    view.setInt16(offset+88, 0, false); // TODO: sxHeight
-    view.setInt16(offset+90, 0, false); // TODO: sCapHeight
-    view.setUint16(offset+92, 0, false); // usDefaultChar
-    view.setUint16(offset+94, 0x20, false); // usBreakChar
-    view.setUint16(offset+96, 2, false); // TODO: usMaxContext
-    view.setUint16(offset+98, 0, false); // usLowerOpticalPointSize
-    view.setUint16(offset+100, 0xFFFF, false); // usUpperOpticalPointSize
-    offset += 102;
-    return offset;
-  },
-  head: (view, offset, settings, glyphs, substitutions)=>{
-    view.setUint16(offset, 1, false); // majorVersion
-    view.setUint16(offset+2, 0, false); // minorVersion
-    let version = parseFloat((settings.version||'Version 1.0').split(' ').slice(-1)[0])||1;
-    view.setInt32(offset+4, Math.round(version * 65536), false); // fontRevision
-    view.setUint32(offset+8, 0, false); // TODO: checksumAdjustment
-    view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
-    view.setUint16(offset+16, 2, false); // TODO: flags
-/*
-Bit 0: Baseline for font at y=0.
-*/
-    view.setUint16(offset+18, 256, false); // TODO: unitsPerEm
-    view.setBigInt64(offset+20, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // created
-    view.setBigInt64(offset+28, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // modified
-    view.setInt16(offset+36, glyfsdata.minX, false); // xMin
-    view.setInt16(offset+38, glyfsdata.minY, false); // yMin
-    view.setInt16(offset+40, glyfsdata.maxX, false); // xMax
-    view.setInt16(offset+42, glyfsdata.maxY, false); // yMax
-    view.setUint16(offset+44, (settings.weight>650?1:0)+(settings.italic?2:0)+(settings.underline?4:0)+(settings.outline?8:0)+(settings.shadow?16:0)+(settings.width<4?32:0)+(settings.width>6?64:0), false); // macStyle
-    view.setUint16(offset+46, 0, false); // TODO: lowestRecPPEM
-    view.setInt16(offset+48, 2, false); // fontDirectionHint
-    view.setInt16(offset+50, 1, false); // indexToLocFormat
-    view.setInt16(offset+52, 0, false); // glyphDataFormat
-    offset += 54;
-/*
-uint32	checksumAdjustment	To compute: set it to 0, sum the entire font as uint32, then store 0xB1B0AFBA - sum.
-uint16	unitsPerEm	Set to a value from 16 to 16384. Any value in this range is valid. In fonts that have TrueType outlines, a power of 2 is recommended as this allows performance optimization in some rasterizers.
-uint16	lowestRecPPEM	Smallest readable size in pixels.*/
-    return offset;
-  },
-  hmtx: (view, offset, settings, glyphs, substitutions)=>{
-    for (let i=0; i<glyphs.length; i++) {
-      view.setUint16(offset, glyfsdata.bound[i].maxX, false); // advanceWidth
-      view.setInt16(offset+2, 0, false); // lsb
-      offset += 4;
-    }
-    return offset;
-  },
-  hhea: (view, offset, settings, glyphs, substitutions)=>{
-    view.setUint16(offset, 1, false); // majorVersion
-    view.setUint16(offset+2, 0, false); // minorVersion
-    view.setInt16(offset+4, settings.ascender, false); // ascender
-    view.setInt16(offset+6, settings.descender, false); // descender
-    view.setInt16(offset+8, settings.linegap, false); // lineGap
-    view.setUint16(offset+10, glyfsdata.maxWidth, false); // advanceWidthMax
-    view.setInt16(offset+12, 0, false); // minLeftSideBearing
-    view.setInt16(offset+14, 0, false); // minRightSideBearing (aw-xMax)
-    view.setInt16(offset+16, glyfsdata.maxWidth, false); // xMaxExtent
-    view.setInt16(offset+18, 0, false); // TODO: caretSlopeRise
-    view.setInt16(offset+20, 0, false); // TODO: caretSlopeRun
-    view.setInt16(offset+22, 0, false); // TODO: caretOffset
-    view.setBigInt64(offset+24, 0n, false); // Reserved
-    view.setInt16(offset+32, 0, false); // metricDataFormatun
-    view.setUint16(offset+34, glyphs.length, false); // numberOfHMetrics
-    offset += 36;
-/*
-int16	caretSlopeRise	Used to calculate the slope of the cursor (rise/run); 1 for vertical.
-int16	caretSlopeRun	0 for vertical.
-int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts*/
-    return offset;
-  },
+
   GSUB: (view, offset, settings, glyphs, substitutions)=>offset
 };
 
@@ -365,14 +365,14 @@ export function generateOTF(settings, glyphs, substitutions) {
     'cmap',
     'glyf',
     'head',
-    'hmtx', // TODO: swap htmx and hhea
     'hhea',
+    'hmtx',
     'loca',
     'maxp',
     'name',
     'post'
   ];
-  if (substitutions.length) tables.unshift('GSUB')
+  if (substitutions.length) tables.unshift('GSUB');
 
   let entrySelector = fl2(tables.length);
   let searchRange = (1<<entrySelector)*16;
@@ -386,12 +386,13 @@ export function generateOTF(settings, glyphs, substitutions) {
   offset += 12;
 
   // Data & Precompute
-  glyfsdata = {
+  shareddata = {
+    headStart: 0,
     bound: [],
     minX: 0, maxX: 0, minY: 0, maxY: 0,
     glyfStart: 0, glyphStarts: [],
     maxWidth: 0, widthSum: 0, widthCount: 0,
-    firstchar: 0xFFFF, lastchar: 0
+    firstchar: 0xFFFF, lastchar: 0, maxContext: 1
   };
   settings.tag ??= 'FSH ';
 
@@ -415,19 +416,20 @@ export function generateOTF(settings, glyphs, substitutions) {
       });
       maxX -= minX;
     }
-    glyfsdata.bound.push({ minY, maxX, maxY, countourEnds });
-    if (minY<glyfsdata.minY) glyfsdata.minY = minY;
-    if (maxX>glyfsdata.maxX) glyfsdata.maxX = maxX;
-    if (maxY>glyfsdata.maxY) glyfsdata.maxY = maxY;
+    shareddata.bound.push({ minY, maxX, maxY, countourEnds });
+    if (minY<shareddata.minY) shareddata.minY = minY;
+    if (maxX>shareddata.maxX) shareddata.maxX = maxX;
+    if (maxY>shareddata.maxY) shareddata.maxY = maxY;
     if (maxX>0) {
-      glyfsdata.widthSum += maxX;
-      glyfsdata.widthCount++;
-      if (maxX>glyfsdata.maxWidth) glyfsdata.maxWidth = maxX;
+      shareddata.widthSum += maxX;
+      shareddata.widthCount++;
+      if (maxX>shareddata.maxWidth) shareddata.maxWidth = maxX;
     }
     if (glyphs[i].char.length<1) continue;
+    if (glyphs[i].char.length>shareddata.maxContext) shareddata.maxContext = glyphs[i].char.length;
     let code = glyphs[i].char.codePointAt(0);
-    if (code>glyfsdata.lastchar) glyfsdata.lastchar = code;
-    if (code<glyfsdata.firstchar) glyfsdata.firstchar = code;
+    if (code>shareddata.lastchar) shareddata.lastchar = code;
+    if (code<shareddata.firstchar) shareddata.firstchar = code;
   }
 
   // Tables

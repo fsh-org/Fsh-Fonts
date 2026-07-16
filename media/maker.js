@@ -68,6 +68,8 @@ showGlyphLists();
 
 // Export
 window.exportFont = ()=>{
+  let family = document.getElementById('string-family').value;
+  let subfamily = document.getElementById('string-subfamily').value;
   let buffer = generateOTF({
     weight: document.getElementById('style-weight').value,
     italic: document.getElementById('style-italic').checked,
@@ -93,8 +95,8 @@ window.exportFont = ()=>{
     descender: document.getElementById('style-descender').value,
     linegap: document.getElementById('style-linegap').value,
 
-    family: document.getElementById('string-family').value,
-    subfamily: document.getElementById('string-subfamily').value,
+    family,
+    subfamily,
     version: document.getElementById('string-version').value,
     copyright: document.getElementById('string-copyright').value,
     designer: document.getElementById('string-designer').value,
@@ -105,7 +107,13 @@ window.exportFont = ()=>{
     tag: document.getElementById('tag').value
   }, glyphs, substitutions);
 
-  let uint8Array = new Uint8Array(buffer);
-  let decoder = new TextDecoder('utf-8');
-  document.getElementById('export-view').innerText = decoder.decode(uint8Array);
+  let url = URL.createObjectURL(new Blob([buffer], { type: 'font/otf' }));
+  let lnk = document.createElement('a');
+  lnk.href = url;
+  lnk.download = `${family.toLowerCase()}-${subfamily.toLowerCase()}.otf`;
+  lnk.style.display = 'none';
+  document.body.appendChild(lnk);
+  lnk.click();
+  lnk.remove();
+  URL.revokeObjectURL(url);
 };

@@ -110,6 +110,7 @@ window.exportFont = ()=>{
     license: document.getElementById('string-license').value,
     sample: document.getElementById('string-sample').value,
 
+    glyphNames: document.getElementById('glyphNames').checked,
     tag: document.getElementById('tag').value
   }, glyphs, substitutions);
 

@@ -330,7 +330,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     return offset;
   },
   post: (view, offset, settings, glyphs, substitutions)=>{
-    view.setUint32(offset, 0x30000, false); // version
+    view.setUint32(offset, settings.glyphNames?0x20000:0x30000, false); // version
     view.setInt32(offset+4, Math.round(settings.italicAngle * 65536), false); // italicAngle
     view.setInt16(offset+8, settings.underlinePosition, false); // underlinePosition
     view.setInt16(offset+10, settings.underlineThickness, false); // underlineThickness
@@ -340,6 +340,23 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     view.setUint32(offset+24, 0, false); // minMemType1
     view.setUint32(offset+28, 0, false); // maxMemType1
     offset += 32;
+    if (!settings.glyphNames) return offset;
+
+    view.setUint16(offset, glyphs.length, false); // numGlyphs
+    offset += 2;
+    for (let i=0; i<glyphs.length; i++) {
+      view.setUint16(offset, 258+i, false); // glyphNameIndex
+      offset += 2;
+    }
+    // stringData
+    for (let i=0; i<glyphs.length; i++) {
+      view.setUint8(offset, glyphs[i].name.length, false);
+      offset += 1;
+      glyphs[i].name.split('').forEach(ch=>{
+        view.setUint8(offset, ch.codePointAt(0), false);
+        offset += 1;
+      });
+    }
     return offset;
   },
 

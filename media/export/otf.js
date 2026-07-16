@@ -283,7 +283,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     let tableStart = offset;
     view.setUint16(offset, 0, false); // version
     let count = (settings.family.length>0)+(settings.subfamily.length>0)+(settings.family.length>0&&settings.subfamily.length>0)+(settings.version.length>0)+(settings.copyright.length>0)+(settings.designer.length>0)+(settings.desc.length>0)+(settings.license.length>0)+(settings.sample.length>0);
-    view.setUint16(offset+2, count, false); // count
+    view.setUint16(offset+2, count*2, false); // count
     view.setUint16(offset+4, 0, false); // storageOffset (temp)
     offset += 6;
     let recordStarts = offset;

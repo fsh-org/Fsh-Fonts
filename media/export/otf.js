@@ -192,8 +192,7 @@ const tableGen = {
     view.setInt32(offset+4, Math.round(version * 65536), false); // fontRevision
     view.setUint32(offset+8, 0, false); // checksumAdjustment (temp)
     view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
-    view.setUint16(offset+16, 2, false); // TODO: flags
-/*Bit 0: Baseline for font at y=0.*/
+    view.setUint16(offset+16, 3, false); // flags
     view.setUint16(offset+18, 256, false); // TODO: unitsPerEm
     view.setBigInt64(offset+20, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // created
     view.setBigInt64(offset+28, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // modified
@@ -282,16 +281,25 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
   },
   name: (view, offset, settings, glyphs, substitutions)=>{
     let tableStart = offset;
-    view.setUint16(offset, 1, false); // version
+    view.setUint16(offset, 0, false); // version
     let count = (settings.family.length>0)+(settings.subfamily.length>0)+(settings.family.length>0&&settings.subfamily.length>0)+(settings.version.length>0)+(settings.copyright.length>0)+(settings.designer.length>0)+(settings.desc.length>0)+(settings.license.length>0)+(settings.sample.length>0);
     view.setUint16(offset+2, count, false); // count
     view.setUint16(offset+4, 0, false); // storageOffset (temp)
     offset += 6;
     let recordStarts = offset;
     let putPlat = (id, str)=>{
+      // Unicode
       view.setUint16(offset, 0, false); // platformID
       view.setUint16(offset+2, 4, false); // encodingID
       view.setUint16(offset+4, 0, false); // languageID
+      view.setUint16(offset+6, id, false); // nameID
+      view.setUint16(offset+8, str.length*2, false); // length
+      view.setUint16(offset+10, 0, false); // stringOffset (temp)
+      offset += 12;
+      // Windows (imagine if microslop supported their own standard correctly)
+      view.setUint16(offset, 3, false); // platformID
+      view.setUint16(offset+2, 10, false); // encodingID
+      view.setUint16(offset+4, 0x409, false); // languageID
       view.setUint16(offset+6, id, false); // nameID
       view.setUint16(offset+8, str.length*2, false); // length
       view.setUint16(offset+10, 0, false); // stringOffset (temp)
@@ -306,13 +314,12 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     if (settings.desc.length>0) putPlat(10, settings.desc);
     if (settings.license.length>0) putPlat(13, settings.license);
     if (settings.sample.length>0) putPlat(19, settings.sample);
-    view.setUint16(offset, 0, false); // langTagCount (languages aren't real)
-    offset += 2;
     view.setUint16(tableStart+4, offset-tableStart, false);
     let storageStart = offset;
     let writeString = (str)=>{
       view.setUint16(recordStarts+10, offset-storageStart, false);
-      recordStarts += 12;
+      view.setUint16(recordStarts+22, offset-storageStart, false);
+      recordStarts += 24;
       for (let i = 0; i < str.length; i++) {
         view.setUint16(offset, str.charCodeAt(i), false);
         offset += 2;

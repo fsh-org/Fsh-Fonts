@@ -68,8 +68,8 @@ showGlyphLists();
 
 // Export
 window.exportFont = ()=>{
-  let family = document.getElementById('string-family').value;
-  let subfamily = document.getElementById('string-subfamily').value;
+  let family = document.getElementById('string-family').value||'Font';
+  let subfamily = document.getElementById('string-subfamily').value||'Regular';
   let buffer = generateOTF({
     weight: document.getElementById('style-weight').value,
     italic: document.getElementById('style-italic').checked,

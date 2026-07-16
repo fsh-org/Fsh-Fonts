@@ -21,20 +21,28 @@ let glyphs = [{
     { x: 0, y: 0, countourEnd: false, onCurve: true },
     { x: 50, y: 0, countourEnd: false, onCurve: true },
     { x: 50, y: 100, countourEnd: false, onCurve: true },
-    { x: 0, y: 100, countourEnd: true, onCurve: true },
     { x: 0, y: 100, countourEnd: false, onCurve: true },
-    { x: 0, y: 0, countourEnd: false, onCurve: true },
-    { x: 50, y: 100, countourEnd: true, onCurve: true }
+    { x: 0, y: 0, countourEnd: true, onCurve: true },
+
+    { x: 10, y: 10, countourEnd: false, onCurve: true },
+    { x: 10, y: 90, countourEnd: false, onCurve: true },
+    { x: 40, y: 90, countourEnd: false, onCurve: true },
+    { x: 40, y: 10, countourEnd: false, onCurve: true },
+    { x: 10, y: 10, countourEnd: true, onCurve: true }
   ]
 }];
 let substitutions = [];
 function showGlyphLists() {
-  let disp = (gl)=>`<div>
-  <span>${JSON.stringify(gl.glyf)}</span>
-  <span>${gl.name}</span>
+  let disp = (gl,idx,where)=>`<div>
+  <div>
+    <button>e</button>
+    <button>x</button>
+  </div>
+  <button onclick="window.editGlyf(${idx}, '${where}')">${JSON.stringify(gl.glyf)}</button>
+  <span>${gl.name}${gl.char!==''&&gl.char!==gl.name?` (${gl.char})`:''}</span>
 </div>`;
-  document.getElementById('glyph-list').innerHTML = glyphs.map(disp).join('');
-  document.getElementById('sub-list').innerHTML = substitutions.map(disp).join('');
+  document.getElementById('glyph-list').innerHTML = glyphs.map((gl,idx)=>disp(gl,idx,'glyphs')).join('');
+  document.getElementById('sub-list').innerHTML = substitutions.map((gl,idx)=>disp(gl,idx,'substitutions')).join('');
 }
 window.createGlyph = ()=>{
   let char = prompt('Character');
@@ -71,6 +79,12 @@ window.createSub = ()=>{
   showGlyphLists();
 };
 showGlyphLists();
+
+window.editGlyf = (idx, where)=>{
+  let t = glyphs;
+  if (where==='substitutions') t = substitutions;
+  t[idx].glyf = prompt('glyph');
+};
 
 // Export
 window.exportFont = ()=>{

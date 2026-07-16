@@ -38,7 +38,8 @@ function showGlyphLists() {
 }
 window.createGlyph = ()=>{
   let char = prompt('Character');
-  if ([...Intl.Segmenter(undefined, {
+  if (!char) return;
+  if ([...new Intl.Segmenter(undefined, {
     granularity: 'grapheme'
   }).segment(char)].length!==1) {
     alert('Only one grapheme allowed');
@@ -57,6 +58,11 @@ window.createGlyph = ()=>{
 };
 window.createSub = ()=>{
   let charseq = prompt('Character sequence');
+  if (!charseq) return;
+  if (substitutions.findIndex(sub=>sub.char===charseq)!==-1) {
+    alert('Substitution for that sequence already defined');
+    return;
+  }
   substitutions.push({
     name: charseq,
     char: charseq,

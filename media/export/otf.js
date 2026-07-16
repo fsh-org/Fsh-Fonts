@@ -24,61 +24,60 @@ let shareddata;
 const tableGen = {
   'OS/2': (view, offset, settings, glyphs, substitutions)=>{
     view.setUint16(offset, 5, false); // version
-    view.setUint16(offset+2, 0, false); // minorVersion
-    view.setInt16(offset+4, Math.ceil(shareddata.widthSum/shareddata.widthCount), false); // xAvgCharWidth
-    view.setUint16(offset+6, settings.weight, false); // usWeightClass
-    view.setUint16(offset+8, settings.width, false); // usWidthClass
-    view.setUint16(offset+10, 0, false); // fsType (Sharing is caring)
-    view.setInt16(offset+12, settings.subXSize, false); // ySubscriptXSize
-    view.setInt16(offset+14, settings.subYSize, false); // ySubscriptYSize
-    view.setInt16(offset+16, settings.subXOff, false); // ySubscriptXOffset
-    view.setInt16(offset+18, settings.subYOff, false); // ySubscriptYOffset
-    view.setInt16(offset+20, settings.supXSize, false); // ySuperscriptXSize
-    view.setInt16(offset+22, settings.supYSize, false); // ySuperscriptYSize
-    view.setInt16(offset+24, settings.supXOff, false); // ySuperscriptXOffset
-    view.setInt16(offset+26, settings.supYOff, false); // ySuperscriptYOffset
-    view.setInt16(offset+28, settings.strikeThickness, false); // yStrikeoutSize
-    view.setInt16(offset+30, settings.strikePosition, false); // yStrikeoutPosition
-    view.setInt16(offset+32, 0, false); // sFamilyClass
+    view.setInt16(offset+2, Math.ceil(shareddata.widthSum/shareddata.widthCount), false); // xAvgCharWidth
+    view.setUint16(offset+4, settings.weight, false); // usWeightClass
+    view.setUint16(offset+6, settings.width, false); // usWidthClass
+    view.setUint16(offset+8, 0, false); // fsType (Sharing is caring)
+    view.setInt16(offset+10, settings.subXSize, false); // ySubscriptXSize
+    view.setInt16(offset+12, settings.subYSize, false); // ySubscriptYSize
+    view.setInt16(offset+14, settings.subXOff, false); // ySubscriptXOffset
+    view.setInt16(offset+16, settings.subYOff, false); // ySubscriptYOffset
+    view.setInt16(offset+18, settings.supXSize, false); // ySuperscriptXSize
+    view.setInt16(offset+20, settings.supYSize, false); // ySuperscriptYSize
+    view.setInt16(offset+22, settings.supXOff, false); // ySuperscriptXOffset
+    view.setInt16(offset+24, settings.supYOff, false); // ySuperscriptYOffset
+    view.setInt16(offset+26, settings.strikeThickness, false); // yStrikeoutSize
+    view.setInt16(offset+28, settings.strikePosition, false); // yStrikeoutPosition
+    view.setInt16(offset+30, 0, false); // sFamilyClass
     // TODO: panose
-    view.setUint8(offset+34, 0, false); // bFamilyType
-    view.setUint8(offset+35, 0, false); // bSerifStyle
-    view.setUint8(offset+36, 0, false); // bWeight
-    view.setUint8(offset+37, 0, false); // bProportion
-    view.setUint8(offset+38, 0, false); // bContrast
-    view.setUint8(offset+39, 0, false); // bStrokeVariation
-    view.setUint8(offset+40, 0, false); // bArmStyle
-    view.setUint8(offset+41, 0, false); // bLetterform
-    view.setUint8(offset+42, 0, false); // bMidline
-    view.setUint8(offset+43, 0, false); // bXHeight
+    view.setUint8(offset+32, 0, false); // bFamilyType
+    view.setUint8(offset+33, 0, false); // bSerifStyle
+    view.setUint8(offset+34, 0, false); // bWeight
+    view.setUint8(offset+35, 0, false); // bProportion
+    view.setUint8(offset+36, 0, false); // bContrast
+    view.setUint8(offset+37, 0, false); // bStrokeVariation
+    view.setUint8(offset+38, 0, false); // bArmStyle
+    view.setUint8(offset+39, 0, false); // bLetterform
+    view.setUint8(offset+40, 0, false); // bMidline
+    view.setUint8(offset+41, 0, false); // bXHeight
     // TODO: ulUnicodeRange (not needed for now)
-    view.setUint32(offset+44, 0, false);
-    view.setUint32(offset+48, 0, false);
-    view.setUint32(offset+52, 0, false);
-    view.setUint32(offset+56, 0, false);
+    view.setUint32(offset+42, 0, false);
+    view.setUint32(offset+46, 0, false);
+    view.setUint32(offset+50, 0, false);
+    view.setUint32(offset+54, 0, false);
     // achVendID
-    view.setUint8(offset+60, settings.tag.codePointAt(0));
-    view.setUint8(offset+61, settings.tag.codePointAt(1));
-    view.setUint8(offset+62, settings.tag.codePointAt(2));
-    view.setUint8(offset+63, settings.tag.codePointAt(3));
-    view.setUint16(offset+64, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0)+128, false); // fsSelection
-    view.setUint16(offset+66, Math.min(shareddata.firstchar, 0xFFFF), false); // usFirstCharIndex
-    view.setUint16(offset+68, Math.max(shareddata.firstchar, shareddata.lastchar), false); // usLastCharIndex
-    view.setInt16(offset+70, settings.ascender, false); // sTypoAscender
-    view.setInt16(offset+72, settings.descender, false); // sTypoDescender
-    view.setInt16(offset+74, settings.linegap, false); // sTypoLineGap
-    view.setUint16(offset+76, shareddata.maxY, false); // usWinAscent
-    view.setUint16(offset+78, Math.abs(shareddata.minY), false); // usWinDescent
-    view.setUint32(offset+80, 0, false); // TODO: ulCodePageRange1 (0 is acceptable for now)
-    view.setUint32(offset+84, 0, false); // TODO: ulCodePageRange2
-    view.setInt16(offset+88, 0, false); // TODO: sxHeight
-    view.setInt16(offset+90, 0, false); // TODO: sCapHeight
-    view.setUint16(offset+92, 0, false); // usDefaultChar
-    view.setUint16(offset+94, 0x20, false); // usBreakChar
-    view.setUint16(offset+96, shareddata.maxContext, false); // usMaxContext
-    view.setUint16(offset+98, 0, false); // usLowerOpticalPointSize
-    view.setUint16(offset+100, 0xFFFF, false); // usUpperOpticalPointSize
-    offset += 102;
+    view.setUint8(offset+58, settings.tag.codePointAt(0));
+    view.setUint8(offset+59, settings.tag.codePointAt(1));
+    view.setUint8(offset+60, settings.tag.codePointAt(2));
+    view.setUint8(offset+61, settings.tag.codePointAt(3));
+    view.setUint16(offset+62, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0)+128, false); // fsSelection
+    view.setUint16(offset+64, Math.min(shareddata.firstchar, 0xFFFF), false); // usFirstCharIndex
+    view.setUint16(offset+66, Math.max(shareddata.firstchar, shareddata.lastchar), false); // usLastCharIndex
+    view.setInt16(offset+68, settings.ascender, false); // sTypoAscender
+    view.setInt16(offset+70, settings.descender, false); // sTypoDescender
+    view.setInt16(offset+72, settings.linegap, false); // sTypoLineGap
+    view.setUint16(offset+74, shareddata.maxY, false); // usWinAscent
+    view.setUint16(offset+76, Math.abs(shareddata.minY), false); // usWinDescent
+    view.setUint32(offset+78, 0, false); // TODO: ulCodePageRange1 (0 is acceptable for now)
+    view.setUint32(offset+82, 0, false); // TODO: ulCodePageRange2
+    view.setInt16(offset+86, 0, false); // TODO: sxHeight
+    view.setInt16(offset+88, 0, false); // TODO: sCapHeight
+    view.setUint16(offset+90, 0, false); // usDefaultChar
+    view.setUint16(offset+92, 0x20, false); // usBreakChar
+    view.setUint16(offset+94, shareddata.maxContext, false); // usMaxContext
+    view.setUint16(offset+96, 0, false); // usLowerOpticalPointSize
+    view.setUint16(offset+98, 0xFFFF, false); // usUpperOpticalPointSize
+    offset += 100;
     return offset;
   },
   cmap: (view, offset, settings, glyphs, substitutions)=>{

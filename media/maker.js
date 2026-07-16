@@ -1,11 +1,111 @@
 import { generateOTF } from './export/otf.js';
 
-window.showPage = (page)=>document.querySelectorAll('main > div').forEach(page=>page.style.display=page.getAttribute('data-page')===page?'':'none');
+window.showPage = (page)=>document.querySelectorAll('main > div').forEach(div=>div.style.display=(div.getAttribute('data-page')===page)?'':'none');
 window.showPage('settings');
 
-window.exportShow = ()=>{
-  document.getElementById('export-modal').showModal();
+// Settings
+const weightNames = ['Thin','Thin','Extra-light','Light','Normal','Medium','Semi-bold','Bold','Extra-bold','Black','Black'];
+const widthNames = ['Gay','Ultra-condensed','Extra-condensed','Condensed','Semi-condensed','Medium','Semi-expanded','Expanded','Extra-expanded','Ultra-expanded'];
+document.getElementById('style-weight').oninput = (evt)=>{
+  document.getElementById('preview-weight').innerText = evt.target.value+' '+weightNames[Math.round(evt.target.value/100)];
 };
+document.getElementById('style-width').oninput = (evt)=>{
+  document.getElementById('preview-width').innerText = evt.target.value+' '+widthNames[evt.target.value];
+};
+
+// Glyphs
+let glyphs = [{
+  name: '.notdef',
+  char: '',
+  glyf: [
+    { x: 0, y: 0, countourEnd: false, onCurve: true },
+    { x: 50, y: 0, countourEnd: false, onCurve: true },
+    { x: 50, y: 100, countourEnd: false, onCurve: true },
+    { x: 0, y: 100, countourEnd: true, onCurve: true },
+    { x: 0, y: 100, countourEnd: false, onCurve: true },
+    { x: 0, y: 0, countourEnd: false, onCurve: true },
+    { x: 50, y: 100, countourEnd: true, onCurve: true }
+  ]
+}];
+let substitutions = [];
+function showGlyphLists() {
+  let disp = (gl)=>`<div>
+  <span>${JSON.stringify(gl.glyf)}</span>
+  <span>${gl.name}</span>
+</div>`;
+  document.getElementById('glyph-list').innerHTML = glyphs.map(disp).join('');
+  document.getElementById('sub-list').innerHTML = substitutions.map(disp).join('');
+}
+window.createGlyph = ()=>{
+  let char = prompt('Character');
+  if ([...Intl.Segmenter(undefined, {
+    granularity: 'grapheme'
+  }).segment(char)].length!==1) {
+    alert('Only one grapheme allowed');
+    return;
+  }
+  if (glyphs.findIndex(gl=>gl.char===char)!==-1) {
+    alert('Glyph for that char already defined');
+    return;
+  }
+  glyphs.push({
+    name: char,
+    char: char,
+    glyf: glyphs[0].glyf
+  });
+  showGlyphLists();
+};
+window.createSub = ()=>{
+  let charseq = prompt('Character sequence');
+  substitutions.push({
+    name: charseq,
+    char: charseq,
+    glyf: glyphs[0].glyf
+  });
+  showGlyphLists();
+};
+showGlyphLists();
+
+// Export
 window.exportFont = ()=>{
-  generateOTF();
+  let buffer = generateOTF({
+    weight: document.getElementById('style-weight').value,
+    italic: document.getElementById('style-italic').checked,
+    italicAngle: document.getElementById('style-italicAngle').value,
+    underline: document.getElementById('style-underline').checked,
+    underlinePosition: document.getElementById('style-underlinePosition').value,
+    underlineThickness: document.getElementById('style-underlineThickness').value,
+    strikePosition: document.getElementById('style-strikePosition').value,
+    strikeThickness: document.getElementById('style-strikeThickness').value,
+    outline: document.getElementById('style-outline').checked,
+    shadow: document.getElementById('style-shadow').checked,
+    width: document.getElementById('style-width').value,
+    monospaced: document.getElementById('style-monospaced').checked,
+    subXSize: document.getElementById('style-subXSize').value,
+    subYSize: document.getElementById('style-subYSize').value,
+    subXOff: document.getElementById('style-subXOff').value,
+    subYOff: document.getElementById('style-subYOff').value,
+    supXSize: document.getElementById('style-supXSize').value,
+    supYSize: document.getElementById('style-supYSize').value,
+    supXOff: document.getElementById('style-supXOff').value,
+    supYOff: document.getElementById('style-supYOff').value,
+    ascender: document.getElementById('style-ascender').value,
+    descender: document.getElementById('style-descender').value,
+    linegap: document.getElementById('style-linegap').value,
+
+    family: document.getElementById('string-family').value,
+    subfamily: document.getElementById('string-subfamily').value,
+    version: document.getElementById('string-version').value,
+    copyright: document.getElementById('string-copyright').value,
+    designer: document.getElementById('string-designer').value,
+    desc: document.getElementById('string-desc').value,
+    license: document.getElementById('string-license').value,
+    sample: document.getElementById('string-sample').value,
+
+    tag: document.getElementById('tag').value
+  }, glyphs, substitutions);
+
+  let uint8Array = new Uint8Array(buffer);
+  let decoder = new TextDecoder('utf-8');
+  document.getElementById('export-view').innerText = decoder.decode(uint8Array);
 };

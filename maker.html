@@ -26,12 +26,6 @@
     <link rel="stylesheet" href="./media/maker.css">
   </head>
   <body>
-    <dialog id="export-modal">
-      <select>
-        <option>OTF</option>
-      </select>
-      <button onclick="window.exportFont()">Download</button>
-    </dialog>
     <nav>
       <a>
         <img src="https://fsh.plus/fsh.png" width="50" height="50" alt="Fsh logo">
@@ -39,13 +33,67 @@
       </a>
       <button onclick="window.showPage('settings')">Settings</button>
       <button onclick="window.showPage('glyphs')">Glyphs</button>
-      <button onclick="window.exportShow()">Export</button>
+      <button onclick="window.showPage('export')">Export</button>
     </nav>
     <main>
       <div data-page="settings">
-
+        <strong>Style</strong><br>
+        <label>Weight: <input id="style-weight" type="range" min="1" max="1000" value="400"></label><span id="preview-weight">400 Normal</span><br>
+        <label>Italic: <input id="style-italic" type="checkbox"></label><br>
+        <label>Italic angle: <input id="style-italicAngle" type="number" value="-12.5" min="-360" max="360" step="0.5"></label><br>
+        <label>Underline: <input id="style-underline" type="checkbox"></label><br>
+        <label>Underline position: <input id="style-underlinePosition" type="number" value="100"></label><br>
+        <label>Underline thickness: <input id="style-underlineThickness" type="number" value="1" min="0" max="1000"></label><br>
+        <label>Strike position: <input id="style-strikePosition" type="number" value="50"></label><br>
+        <label>Strike thickness: <input id="style-strikeThickness" type="number" value="1" min="0" max="1000"></label><br>
+        <label>Outline: <input id="style-outline" type="checkbox"></label><br>
+        <label>Shadow: <input id="style-shadow" type="checkbox"></label><br>
+        <label>Width: <input id="style-width" type="range" min="1" max="9" value="5"></label><span id="preview-width">5 Medium</span><br>
+        <label>Monospaced: <input id="style-monospaced" type="checkbox"></label><br>
+        <label>Subscript X size: <input id="style-subXSize" type="number"></label><br>
+        <label>Subscript Y size: <input id="style-subYSize" type="number"></label><br>
+        <label>Subscript X offset: <input id="style-subXOff" type="number"></label><br>
+        <label>Subscript Y offset: <input id="style-subYOff" type="number"></label><br>
+        <label>Superscript X size: <input id="style-supXSize" type="number"></label><br>
+        <label>Superscript Y size: <input id="style-supYSize" type="number"></label><br>
+        <label>Superscript X offset: <input id="style-supXOff" type="number"></label><br>
+        <label>Superscript Y offset: <input id="style-supYOff" type="number"></label><br>
+        <label>Ascender: <input id="style-ascender" type="number"></label><br>
+        <label>Descender: <input id="style-descender" type="number"></label><br>
+        <label>Line gap: <input id="style-linegap" type="number"></label><br><br>
+        <strong>Strings</strong><br>
+        <label>Family: <input id="string-family" placeholder="Fontex"></label><br>
+        <label>Subfamily: <input id="string-subfamily" placeholder="Regular"></label><br>
+        <label>Version: <input id="string-version" placeholder="Version 1.0"></label><br>
+        <label>Copyright: <input id="string-copyright" placeholder="Fsh"></label><br>
+        <label>Designer: <input id="string-designer" placeholder="Jhon Font"></label><br>
+        <label>Description: <textarea id="string-desc"></textarea></label><br>
+        <label>License: <textarea id="string-license"></textarea></label><br>
+        <label>Sample text: <input id="string-sample" placeholder="The quick brown fox jumps over the lazy dog"></label><br><br>
+        <strong>Other</strong><br>
+        <label>Tag: <select id="tag">
+          <option value="FSH ">FSH</option>
+          <option value="    ">(none)</option>
+        </select></label>
       </div>
       <div data-page="glyphs">
+        <div>
+          <h2>Glyphs</h2>
+          <button onclick="window.createGlyph()">+</button>
+        </div>
+        <div class="list" id="glyph-list"></div>
+        <div>
+          <h2>Substitution / Ligatures</h2>
+          <button onclick="window.createSub()">+</button>
+        </div>
+        <div class="list" id="sub-list"></div>
+      </div>
+      <div data-page="export">
+        <select id="export-type">
+          <option value="otf">OpenType (OTF)</option>
+        </select>
+        <button onclick="window.exportFont()">Download</button>
+        <p id="export-view"></p>
       </div>
     </main>
     <script src="./media/maker.js" type="module"></script>

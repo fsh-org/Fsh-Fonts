@@ -19,6 +19,14 @@ function getChecksum(view, offset, length) {
   return sum >>> 0;
 }
 
+const VariationSelector = (point)=>(point>=0xFE00&&point<=0xFE0F)||(point>=0xE0100&&point<=0xE01EF)||(point>=0x180B&&point<=0x180D);
+export function classifyChar(char) {
+  let cps = Array.from(gl.char);
+  if (cps.length===1) return cps[0].codePointAt(0)<=0xFFFF ? 4 : 12;
+  if (cps.length===2 && VariationSelector(cps[1].codePointAt(0))) return 14;
+  return null;
+}
+
 // Tables
 let shareddata;
 const tableGen = {
@@ -81,9 +89,9 @@ const tableGen = {
     return offset;
   },
   cmap: (view, offset, settings, glyphs, substitutions)=>{
-    let subtable4glyphs = glyphs.filter(gl=>gl.char.length===1&&gl.char.codePointAt(0)<=0xFFFF);
-    let subtable12glyphs = glyphs.filter(gl=>gl.char.length===1&&gl.char.codePointAt(0)>0xFFFF);
-    let subtable14glyphs = glyphs.filter(gl=>gl.char.length>1);
+    let subtable4glyphs = glyphs.filter(gl=>classifyChar(gl.char)===4);
+    let subtable12glyphs = glyphs.filter(gl=>classifyChar(gl.char)===12);
+    let subtable14glyphs = glyphs.filter(gl=>classifyChar(gl.char)===14);
 
     let tableStart = offset;
     view.setUint16(offset, 0, false); // version

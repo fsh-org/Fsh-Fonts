@@ -1,4 +1,4 @@
-import { generateOTF } from './export/otf.js';
+import { generateOTF, classifyChar } from './export/otf.js';
 import { renderTTO } from './render.js';
 
 window.showPage = (page)=>document.querySelectorAll('main > div').forEach(div=>div.style.display=(div.getAttribute('data-page')===page)?'':'none');
@@ -36,7 +36,7 @@ let glyphs = [{
 let substitutions = [];
 function showGlyphLists() {
   let disp = (gl,idx,where)=>`<button onclick="window.editGlyf(${idx}, '${where}')">
-  ${renderTTO(gl.glyf, 256, 100)}</button>
+  ${renderTTO(gl.glyf, 256, 100)}
   <span>${gl.name}${gl.char!==''&&gl.char!==gl.name?` (${gl.char})`:''}</span>
 </button>`;
   document.getElementById('glyph-list').innerHTML = glyphs.map((gl,idx)=>disp(gl,idx,'glyphs')).join('');
@@ -45,14 +45,12 @@ function showGlyphLists() {
 window.createGlyph = ()=>{
   let char = prompt('Character');
   if (!char) return;
-  if ([...new Intl.Segmenter(undefined, {
-    granularity: 'grapheme'
-  }).segment(char)].length!==1) {
-    alert('Only one grapheme allowed');
+  if (classifyChar(char)===null) {
+    alert('Must be one code point or be a varation sequence');
     return;
   }
   if (glyphs.findIndex(gl=>gl.char===char)!==-1) {
-    alert('Glyph for that char already defined');
+    alert('Glyph for that already defined');
     return;
   }
   glyphs.push({

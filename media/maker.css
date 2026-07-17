@@ -5,10 +5,11 @@ body {
   overflow: hidden;
 }
 nav {
-  width: 25dvw;
   display: flex;
   gap: 5px;
   flex-direction: column;
+  width: 25dvw;
+  max-width: 300px;
   padding: 10px;
   background-color: var(--bg-0);
   box-sizing: border-box;
@@ -19,8 +20,9 @@ nav a {
   color: var(--text-1);
 }
 main {
-  width: 75dvw;
-  padding: 5px;
+  flex: 1;
+  width: 0px;
+  padding: 10px;
   overflow: auto;
   box-sizing: border-box;
 }
@@ -32,10 +34,13 @@ main {
 }
 .list {
   display: flex;
+  gap: 5px;
   flex-wrap: wrap;
 }
-.list div {
-  padding: 5px;
-  border-radius: 0.5rem;
+.list button {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border: none;
   background-color: var(--bg-2);
 }

@@ -109,6 +109,7 @@ const tableGen = {
       view.setUint16(offset+4, 0, false); // language
       offset += 6;
       let segCount = subtable4glyphs.length+1; // Optimize segments if you want, but im not doing that
+      // TODO: I need to order glyphs anyways so optimizing ^ is a maybe
       let entrySelector = fl2(segCount);
       let searchRange = (1<<entrySelector)*2;
       view.setUint16(offset, segCount*2, false); // segCountX2
@@ -217,9 +218,9 @@ uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     view.setInt16(offset+4, settings.ascender, false); // ascender
     view.setInt16(offset+6, settings.descender, false); // descender
     view.setInt16(offset+8, settings.linegap, false); // lineGap
-    view.setUint16(offset+10, shareddata.maxWidth, false); // advanceWidthMax
+    view.setUint16(offset+10, shareddata.maxAdvance, false); // advanceWidthMax
     view.setInt16(offset+12, 0, false); // minLeftSideBearing
-    view.setInt16(offset+14, 0, false); // minRightSideBearing (aw-xMax)
+    view.setInt16(offset+14, shareddata.minRightBearing, false); // minRightSideBearing (aw-xMax)
     view.setInt16(offset+16, shareddata.maxWidth, false); // xMaxExtent
     view.setInt16(offset+18, 0, false); // TODO: caretSlopeRise
     view.setInt16(offset+20, 1, false); // TODO: caretSlopeRun
@@ -236,7 +237,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
   },
   hmtx: (view, offset, settings, glyphs, substitutions)=>{
     for (let i=0; i<glyphs.length; i++) {
-      view.setUint16(offset, shareddata.bound[i].maxX, false); // advanceWidth
+      view.setUint16(offset, glyphs[i].advance, false); // advanceWidth
       view.setInt16(offset+2, 0, false); // lsb
       offset += 4;
     }
@@ -404,6 +405,7 @@ export function generateOTF(settings, glyphs, substitutions) {
     headStart: 0,
     bound: [],
     minX: 0, maxX: 0, minY: 0, maxY: 0,
+    maxAdvance: 0, minRightBearing: 0,
     glyfStart: 0, glyphStarts: [],
     maxWidth: 0, widthSum: 0, widthCount: 0,
     firstchar: 0xFFFF, lastchar: 0, maxContext: 1
@@ -439,6 +441,8 @@ export function generateOTF(settings, glyphs, substitutions) {
       shareddata.widthCount++;
       if (maxX>shareddata.maxWidth) shareddata.maxWidth = maxX;
     }
+    if (glyphs[i].advance>shareddata.maxAdvance) shareddata.maxAdvance = glyphs[i].advance;
+    if (glyphs[i].advance-maxX<shareddata.minRightBearing) shareddata.minRightBearing = glyphs[i].advance-maxX;
     if (glyphs[i].char.length<1) continue;
     if (glyphs[i].char.length>shareddata.maxContext) shareddata.maxContext = glyphs[i].char.length;
     let code = glyphs[i].char.codePointAt(0);

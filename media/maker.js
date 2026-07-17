@@ -1,4 +1,5 @@
 import { generateOTF } from './export/otf.js';
+import { renderTTO } from './render.js';
 
 window.showPage = (page)=>document.querySelectorAll('main > div').forEach(div=>div.style.display=(div.getAttribute('data-page')===page)?'':'none');
 window.showPage('settings');
@@ -17,6 +18,7 @@ document.getElementById('style-width').oninput = (evt)=>{
 let glyphs = [{
   name: '.notdef',
   char: '',
+  advance: 110,
   glyf: [
     { x: 0, y: 0, countourEnd: false, onCurve: true },
     { x: 50, y: 0, countourEnd: false, onCurve: true },
@@ -33,14 +35,10 @@ let glyphs = [{
 }];
 let substitutions = [];
 function showGlyphLists() {
-  let disp = (gl,idx,where)=>`<div>
-  <div>
-    <button>e</button>
-    <button>x</button>
-  </div>
-  <button onclick="window.editGlyf(${idx}, '${where}')">${JSON.stringify(gl.glyf)}</button>
+  let disp = (gl,idx,where)=>`<button onclick="window.editGlyf(${idx}, '${where}')">
+  ${renderTTO(gl.glyf, 256, 100)}</button>
   <span>${gl.name}${gl.char!==''&&gl.char!==gl.name?` (${gl.char})`:''}</span>
-</div>`;
+</button>`;
   document.getElementById('glyph-list').innerHTML = glyphs.map((gl,idx)=>disp(gl,idx,'glyphs')).join('');
   document.getElementById('sub-list').innerHTML = substitutions.map((gl,idx)=>disp(gl,idx,'substitutions')).join('');
 }
@@ -60,6 +58,7 @@ window.createGlyph = ()=>{
   glyphs.push({
     name: char,
     char: char,
+    advance: glyphs[0].advance,
     glyf: glyphs[0].glyf
   });
   showGlyphLists();
@@ -74,16 +73,22 @@ window.createSub = ()=>{
   substitutions.push({
     name: charseq,
     char: charseq,
+    advance: glyphs[0].advance,
     glyf: glyphs[0].glyf
   });
   showGlyphLists();
 };
 showGlyphLists();
 
+let editModal = document.getElementById('edit-glyph');
 window.editGlyf = (idx, where)=>{
   let t = glyphs;
   if (where==='substitutions') t = substitutions;
-  t[idx].glyf = prompt('glyph');
+  editModal.showModal();
+  editModal.querySelector('.contain').innerHTML = renderTTO(t[idx].glyf, 256, 256, true, t[idx].advance);
+  editModal.querySelector('h2').innerText = `${t[idx].name}${t[idx].char!==''&&t[idx].char!==t[idx].name?` (${t[idx].char})`:''}`;
+  editModal.querySelector('input').value = t[idx].name;
+  editModal.querySelector('input[type="number"]').value = t[idx].advance;
 };
 
 // Export

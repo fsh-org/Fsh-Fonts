@@ -21,9 +21,9 @@ function getChecksum(view, offset, length) {
 
 const VariationSelector = (point)=>(point>=0xFE00&&point<=0xFE0F)||(point>=0xE0100&&point<=0xE01EF)||(point>=0x180B&&point<=0x180D);
 export function classifyChar(char) {
-  let cps = Array.from(gl.char);
-  if (cps.length===1) return cps[0].codePointAt(0)<=0xFFFF ? 4 : 12;
-  if (cps.length===2 && VariationSelector(cps[1].codePointAt(0))) return 14;
+  char = Array.from(char);
+  if (char.length===1) return char[0].codePointAt(0)<=0xFFFF ? 4 : 12;
+  if (char.length===2 && VariationSelector(char[1].codePointAt(0))) return 14;
   return null;
 }
 

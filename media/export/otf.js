@@ -62,7 +62,7 @@ const tableGen = {
     view.setUint8(offset+61, settings.tag.codePointAt(3));
     view.setUint16(offset+62, (settings.italic?1:0)+(settings.underline?2:0)+(settings.outline?8:0)+(settings.weight>650?32:0)+(settings.width===5&&Math.round(settings.weight/100)===4&&!settings.italic&&!settings.underline&&!settings.outline?64:0)+128, false); // fsSelection
     view.setUint16(offset+64, Math.min(shareddata.firstchar, 0xFFFF), false); // usFirstCharIndex
-    view.setUint16(offset+66, Math.max(shareddata.firstchar, shareddata.lastchar), false); // usLastCharIndex
+    view.setUint16(offset+66, Math.min(shareddata.lastchar, 0xFFFF), false); // usLastCharIndex
     view.setInt16(offset+68, settings.ascender, false); // sTypoAscender
     view.setInt16(offset+70, settings.descender, false); // sTypoDescender
     view.setInt16(offset+72, settings.linegap, false); // sTypoLineGap
@@ -340,7 +340,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     view.setInt32(offset+4, Math.round(settings.italicAngle * 65536), false); // italicAngle
     view.setInt16(offset+8, settings.underlinePosition, false); // underlinePosition
     view.setInt16(offset+10, settings.underlineThickness, false); // underlineThickness
-    view.setUint32(offset+12, settings.monospaced?0:1, false); // isFixedPitch
+    view.setUint32(offset+12, settings.monospaced?1:0, false); // isFixedPitch
     view.setUint32(offset+16, 0, false); // minMemType42
     view.setUint32(offset+20, 0, false); // maxMemType42
     view.setUint32(offset+24, 0, false); // minMemType1

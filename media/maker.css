@@ -26,6 +26,29 @@ main {
   overflow: auto;
   box-sizing: border-box;
 }
+#edit-glyph[open] {
+  display: flex;
+}
+#edit-glyph div {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#edit-glyph label {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  width: 100%;
+  min-width: 200px;
+}
+#edit-glyph input {
+  flex: 1;
+  width: 0px;
+  min-width: 0px;
+  margin: 0px !important;
+}
 [data-page="glyphs"] > div:has(h2) {
   display: flex;
 }

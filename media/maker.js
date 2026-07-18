@@ -18,19 +18,19 @@ document.getElementById('style-width').oninput = (evt)=>{
 let glyphs = [{
   name: '.notdef',
   char: '',
-  advance: 110,
+  advance: 144,
   glyf: [
     { x: 0, y: 0, countourEnd: false, onCurve: true },
-    { x: 50, y: 0, countourEnd: false, onCurve: true },
-    { x: 50, y: 100, countourEnd: false, onCurve: true },
-    { x: 0, y: 100, countourEnd: false, onCurve: true },
+    { x: 128, y: 0, countourEnd: false, onCurve: true },
+    { x: 128, y: 256, countourEnd: false, onCurve: true },
+    { x: 0, y: 256, countourEnd: false, onCurve: true },
     { x: 0, y: 0, countourEnd: true, onCurve: true },
 
-    { x: 10, y: 10, countourEnd: false, onCurve: true },
-    { x: 10, y: 90, countourEnd: false, onCurve: true },
-    { x: 40, y: 90, countourEnd: false, onCurve: true },
-    { x: 40, y: 10, countourEnd: false, onCurve: true },
-    { x: 10, y: 10, countourEnd: true, onCurve: true }
+    { x: 32, y: 32, countourEnd: false, onCurve: true },
+    { x: 32, y: 224, countourEnd: false, onCurve: true },
+    { x: 96, y: 224, countourEnd: false, onCurve: true },
+    { x: 96, y: 32, countourEnd: false, onCurve: true },
+    { x: 32, y: 32, countourEnd: true, onCurve: true }
   ]
 }];
 let substitutions = [];

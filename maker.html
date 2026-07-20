@@ -55,29 +55,34 @@
         <label>Underline thickness: <input id="style-underlineThickness" type="number" value="1" min="0" max="1000"></label><br>
         <label>Strike position: <input id="style-strikePosition" type="number" value="50"></label><br>
         <label>Strike thickness: <input id="style-strikeThickness" type="number" value="1" min="0" max="1000"></label><br>
-        <label>Outline: <input id="style-outline" type="checkbox"></label><br>
-        <label>Shadow: <input id="style-shadow" type="checkbox"></label><br>
         <label>Width: <input id="style-width" type="range" min="1" max="9" value="5"></label><span id="preview-width">5 Medium</span><br>
         <label>Monospaced: <input id="style-monospaced" type="checkbox"></label><br>
-        <label>Subscript X size: <input id="style-subXSize" type="number" value="90"></label><br>
-        <label>Subscript Y size: <input id="style-subYSize" type="number" value="90"></label><br>
-        <label>Subscript X offset: <input id="style-subXOff" type="number" value="0"></label><br>
-        <label>Subscript Y offset: <input id="style-subYOff" type="number" value="166"></label><br>
-        <label>Superscript X size: <input id="style-supXSize" type="number" value="90"></label><br>
-        <label>Superscript Y size: <input id="style-supYSize" type="number" value="90"></label><br>
-        <label>Superscript X offset: <input id="style-supXOff" type="number" value="0"></label><br>
-        <label>Superscript Y offset: <input id="style-supYOff" type="number" value="0"></label><br>
         <label>Ascender: <input id="style-ascender" type="number" value="256"></label><br>
         <label>Descender: <input id="style-descender" type="number" value="256"></label><br>
-        <label>Line gap: <input id="style-linegap" type="number" value="256"></label><br><br>
+        <label>Line gap: <input id="style-linegap" type="number" value="256"></label>
+        <details>
+          <summary>Advanced</summary>
+          <label>Outline: <input id="style-outline" type="checkbox"></label><br>
+          <label>Shadow: <input id="style-shadow" type="checkbox"></label><br>
+          <label>Subscript X size: <input id="style-subXSize" type="number" value="90"></label><br>
+          <label>Subscript Y size: <input id="style-subYSize" type="number" value="90"></label><br>
+          <label>Subscript X offset: <input id="style-subXOff" type="number" value="0"></label><br>
+          <label>Subscript Y offset: <input id="style-subYOff" type="number" value="166"></label><br>
+          <label>Superscript X size: <input id="style-supXSize" type="number" value="90"></label><br>
+          <label>Superscript Y size: <input id="style-supYSize" type="number" value="90"></label><br>
+          <label>Superscript X offset: <input id="style-supXOff" type="number" value="0"></label><br>
+          <label>Superscript Y offset: <input id="style-supYOff" type="number" value="0"></label>
+        </details><br>
         <strong>Strings</strong><br>
         <label>Family: <input id="string-family" placeholder="Fontex"></label><br>
         <label>Subfamily: <input id="string-subfamily" placeholder="Regular"></label><br>
         <label>Version: <input id="string-version" placeholder="Version 1.0"></label><br>
         <label>Copyright: <input id="string-copyright" placeholder="Fsh"></label><br>
         <label>Designer: <input id="string-designer" placeholder="Jhon Font"></label><br>
-        <label>Description: <textarea id="string-desc"></textarea></label><br>
-        <label>License: <textarea id="string-license"></textarea></label><br>
+        <label for="string-desc">Description:</label><br>
+        <textarea id="string-desc"></textarea><br>
+        <label for="string-license">License:</label><br>
+        <textarea id="string-license"></textarea><br>
         <label>Sample text: <input id="string-sample" placeholder="The quick brown fox jumps over the lazy dog"></label><br><br>
         <strong>Other</strong><br>
         <label>Include glyph names: <input id="glyphNames" type="checkbox" checked></label><br>

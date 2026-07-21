@@ -69,7 +69,7 @@ const featByType = [
     ['zero', 'Slashed zero'],
     ['smcp', 'Small capitals'],
     ['locl', 'Localized'],
-    ['trad', 'Traditional']
+    ['trad', 'Traditional'],
     ['hist', 'Historical']
   ],
   [
@@ -98,7 +98,7 @@ document.getElementById('sub-make').onclick = ()=>{
   let feature = document.getElementById('sub-feat').value;
   substitutions.push({
     type, feature,
-    name: `${feature}/${type} ${char}`,
+    name: `${feature}/${type} ${charseq}`,
     char: charseq,
     advance: glyphs[0].advance,
     glyf: glyphs[0].glyf

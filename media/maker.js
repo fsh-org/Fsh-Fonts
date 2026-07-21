@@ -62,6 +62,7 @@ window.createGlyph = ()=>{
   showGlyphLists();
 };
 const featByType = [
+  [],
   [
     ['subs', 'Subscript'],
     ['sups', 'Superscript'],

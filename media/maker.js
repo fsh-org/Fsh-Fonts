@@ -61,20 +61,51 @@ window.createGlyph = ()=>{
   });
   showGlyphLists();
 };
-window.createSub = ()=>{
+const featByType = {
+  single: [
+    ['subs', 'Subscript'],
+    ['sups', 'Superscript'],
+    ['zero', 'Slashed zero'],
+    ['smcp', 'Small capitals'],
+    ['locl', 'Localized'],
+    ['trad', 'Traditional']
+    ['hist', 'Historical']
+  ],
+  multiple: [
+    ['ccmp', 'Decompose'],
+    ['frac', 'Fractions']
+  ],
+  alternate: [
+    ['salt', 'Stylistic'],
+    ['rand', 'Randomize'],
+    ['aalt', 'All alternates']
+  ],
+  ligature: [
+    ['liga', 'Standard'],
+    ['rlig', 'Required'],
+    ['dlig', 'Discretionary'],
+    ['hlig', 'Historical']
+  ]
+};
+document.getElementById('sub-type').onchange = (evt)=>{
+  document.getElementById('sub-feat').innerHTML = featByType[evt.target.value].map(feat=>`<option value="${feat[0]}">${feat[1]}</option>`).join('');
+};
+document.getElementById('sub-make').onclick = ()=>{
   let charseq = prompt('Character sequence');
   if (!charseq) return;
-  if (substitutions.findIndex(sub=>sub.char===charseq)!==-1) {
-    alert('Substitution for that sequence already defined');
-    return;
-  }
+  let type = parseInt(document.getElementById('sub-type').value);
+  let feature = document.getElementById('sub-feat').value;
   substitutions.push({
-    name: charseq,
+    type, feature,
+    name: `${feature}/${type} ${char}`,
     char: charseq,
     advance: glyphs[0].advance,
     glyf: glyphs[0].glyf
   });
   showGlyphLists();
+};
+window.createSub = ()=>{
+  document.getElementById('create-sub').showModal();
 };
 showGlyphLists();
 

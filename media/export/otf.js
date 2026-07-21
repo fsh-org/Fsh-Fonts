@@ -30,7 +30,7 @@ export function classifyChar(char) {
 // Tables
 let shareddata;
 const tableGen = {
-  'OS/2': (view, offset, settings, glyphs, substitutions)=>{
+  'OS/2': (view, offset, settings)=>{
     view.setUint16(offset, 5, false); // version
     view.setInt16(offset+2, Math.ceil(shareddata.widthSum/shareddata.widthCount), false); // xAvgCharWidth
     view.setUint16(offset+4, settings.weight, false); // usWeightClass
@@ -88,7 +88,7 @@ const tableGen = {
     offset += 100;
     return offset;
   },
-  cmap: (view, offset, settings, glyphs, substitutions)=>{
+  cmap: (view, offset, _, glyphs)=>{
     let subtable4glyphs = glyphs.filter(gl=>classifyChar(gl.char)===4);
     let subtable12glyphs = glyphs.filter(gl=>classifyChar(gl.char)===12);
     let subtable14glyphs = glyphs.filter(gl=>classifyChar(gl.char)===14);
@@ -155,7 +155,7 @@ const tableGen = {
 
     return offset;
   },
-  glyf: (view, offset, settings, glyphs, substitutions)=>{
+  glyf: (view, offset, _, glyphs)=>{
     shareddata.glyfStart = offset;
     for (let i=0; i<glyphs.length; i++) {
       shareddata.glyphStarts.push(offset);
@@ -192,7 +192,7 @@ const tableGen = {
     shareddata.glyphStarts.push(offset);
     return offset;
   },
-  head: (view, offset, settings, glyphs, substitutions)=>{
+  head: (view, offset, settings)=>{
     shareddata.headStart = offset;
     view.setUint16(offset, 1, false); // majorVersion
     view.setUint16(offset+2, 0, false); // minorVersion
@@ -220,7 +220,7 @@ uint16	unitsPerEm	Set to a value from 16 to 16384. Any value in this range is va
 uint16	lowestRecPPEM	Smallest readable size in pixels.*/
     return offset;
   },
-  hhea: (view, offset, settings, glyphs, substitutions)=>{
+  hhea: (view, offset, settings, glyphs)=>{
     view.setUint16(offset, 1, false); // majorVersion
     view.setUint16(offset+2, 0, false); // minorVersion
     view.setInt16(offset+4, settings.ascender, false); // ascender
@@ -243,7 +243,7 @@ int16	caretSlopeRun	0 for vertical.
 int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts*/
     return offset;
   },
-  hmtx: (view, offset, settings, glyphs, substitutions)=>{
+  hmtx: (view, offset, _, glyphs)=>{
     for (let i=0; i<glyphs.length; i++) {
       view.setUint16(offset, glyphs[i].advance, false); // advanceWidth
       view.setInt16(offset+2, 0, false); // lsb
@@ -251,14 +251,14 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     }
     return offset;
   },
-  loca: (view, offset, settings, glyphs, substitutions)=>{
+  loca: (view, offset)=>{
     for (let i=0; i<shareddata.glyphStarts.length; i++) {
       view.setUint32(offset, shareddata.glyphStarts[i]-shareddata.glyfStart, false);
       offset += 4;
     }
     return offset;
   },
-  maxp: (view, offset, settings, glyphs, substitutions)=>{
+  maxp: (view, offset, _, glyphs)=>{
     view.setUint32(offset, 0x10000, false); // version
     let maxPoints = 0;
     let maxContours = 0;
@@ -287,7 +287,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     offset += 32;
     return offset;
   },
-  name: (view, offset, settings, glyphs, substitutions)=>{
+  name: (view, offset, settings)=>{
     let tableStart = offset;
     view.setUint16(offset, 0, false); // version
     let count = (settings.family.length>0)+(settings.subfamily.length>0)+(settings.family.length>0&&settings.subfamily.length>0)+(settings.version.length>0)+(settings.copyright.length>0)+(settings.designer.length>0)+(settings.desc.length>0)+(settings.license.length>0)+(settings.sample.length>0);
@@ -344,7 +344,7 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     if (settings.sample.length>0) writeString(settings.sample);
     return offset;
   },
-  post: (view, offset, settings, glyphs, substitutions)=>{
+  post: (view, offset, settings, glyphs)=>{
     view.setUint32(offset, settings.glyphNames?0x20000:0x30000, false); // version
     view.setInt32(offset+4, Math.round(settings.italicAngle * 65536), false); // italicAngle
     view.setInt16(offset+8, settings.underlinePosition, false); // underlinePosition
@@ -375,7 +375,84 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     return offset;
   },
 
-  GSUB: (view, offset, settings, glyphs, substitutions)=>offset
+  GSUB: (view, offset, settings, glyphs, substitutions)=>{
+    let gsubstart = offset;
+    view.setUint16(offset, 1, false); // majorVersion
+    view.setUint16(offset+2, 0, false); // minorVersion
+    view.setUint16(offset+4, 10, false); // scriptListOffset
+    view.setUint16(offset+6, 0, false); // featureListOffset (temp)
+    view.setUint16(offset+8, 0, false); // lookupListOffset (temp)
+    offset += 10;
+
+    // Script list
+    view.setUint16(offset, 1, false); // scriptCount
+    view.setUint8(offset+2, 'D'.codePointAt(0), false);
+    view.setUint8(offset+3, 'F'.codePointAt(0), false);
+    view.setUint8(offset+4, 'L'.codePointAt(0), false);
+    view.setUint8(offset+5, 'T'.codePointAt(0), false);
+    view.setUint16(offset+6, 8, false); // scriptOffset
+    offset += 8;
+    view.setUint16(offset, 4, false); // defaultLangSysOffset
+    view.setUint16(offset+2, 0, false); // langSysCount
+    offset += 4;
+    view.setUint16(offset, 0, false); // lookupOrderOffset
+    view.setUint16(offset+2, 0xFFFF, false); // requiredFeatureIndex
+    let features = Array.from(new Set(substitutions.map(sub=>sub.feature)));
+    view.setUint16(offset+4, features.length, false); // featureIndexCount
+    offset += 6;
+    for (let i=0; i<features.length; i++) {
+      view.setUint16(offset, i, false); // featureIndices
+      offset += 2;
+    }
+
+    // Feature list
+    view.setUint16(gsubstart+6, offset-gsubstart, false); // featureListOffset
+    let fliststart = offset;
+    view.setUint16(offset, features.length, false); // featureCount
+    offset += 2;
+    for (let i=0; i<features.length; i++) {
+      view.setUint8(offset, features[i].codePointAt(0), false);
+      view.setUint8(offset+1, features[i].codePointAt(1), false);
+      view.setUint8(offset+2, features[i].codePointAt(2), false);
+      view.setUint8(offset+3, features[i].codePointAt(3), false);
+      view.setUint16(offset+4, 0, false); // featureOffset (temp)
+      offset += 6;
+    }
+    for (let i=0; i<features.length; i++) {
+      view.setUint16(fliststart+i*6+6, offset-fliststart, false);
+      view.setUint16(offset, 0, false); // featureParamsOffset
+      view.setUint16(offset+2, 1, false); // lookupIndexCount
+      view.setUint16(offset+4, i, false); // lookupListIndices
+      offset += 6;
+    }
+
+    // Lookup list
+    let lookstart = offset;
+    let sb = [];
+    for (let i=0; i<features.length; i++) {
+      let subs = substitutions.filter(sub=>sub.feature===features[i]);
+      view.setUint16(offset, subs.length, false); // lookupCount
+      offset += 2;
+      for (let j=0; j<subs.length; j++) {
+        let k = structuredClone(subs[j]);
+        k.lookup = offset;
+        sb.push(k);
+        view.setUint16(offset, 0, false); // lookupOffsets (temp)
+        offset += 2;
+      }
+      offset += 6;
+    }
+    for (let i=0; i<sb.length; i++) {
+      view.setUint16(sb[i].lookup, offset-lookstart, false);
+      view.setUint16(offset, sb[i].type, false); // lookupType
+      view.setUint16(offset+2, 0, false); // lookupFlag
+      view.setUint16(offset+4, 0, false); // TODO: subTableCount
+      //view.setUint16(offset+2, 0, false); // TODO: subtableOffsets
+      offset += 6;
+    }
+/*Offset16	subtableOffsets[subTableCount]	Array of offsets to lookup subtables, from beginning of Lookup table.*/
+    return offset;
+  }
 };
 
 export function generateOTF(settings, glyphs, substitutions) {

@@ -26,12 +26,25 @@
     <link rel="stylesheet" href="./media/maker.css">
   </head>
   <body>
+    <dialog id="create-sub">
+      <h2>Create substitution</h2>
+      <label>Type: <select id="sub-type">
+        <option value="1">Single (A->B)</option>
+        <option value="2">Multiple (A->BB)</option>
+        <option value="3">Alternate (A->a)</option>
+        <option value="4" selected>Ligature (AA->B)</option>
+      </select></label>
+      <label>Feature: <select id="sub-feat"></select></label>
+      <label>In: <input></label>
+      <label>Out: <input></label>
+      <button id="sub-make">Create</button>
+    </dialog>
     <dialog id="edit-glyph">
       <div class="contain"></div>
       <div>
         <h2></h2>
-        <label>Name <input></label>
-        <label>Advance <input type="number"></label>
+        <label>Name: <input></label>
+        <label>Advance: <input type="number"></label>
         <button>Change glyf</button>
       </div>
     </dialog>

@@ -61,8 +61,8 @@ window.createGlyph = ()=>{
   });
   showGlyphLists();
 };
-const featByType = {
-  single: [
+const featByType = [
+  [
     ['subs', 'Subscript'],
     ['sups', 'Superscript'],
     ['zero', 'Slashed zero'],
@@ -71,22 +71,22 @@ const featByType = {
     ['trad', 'Traditional']
     ['hist', 'Historical']
   ],
-  multiple: [
+  [
     ['ccmp', 'Decompose'],
     ['frac', 'Fractions']
   ],
-  alternate: [
+  [
     ['salt', 'Stylistic'],
     ['rand', 'Randomize'],
     ['aalt', 'All alternates']
   ],
-  ligature: [
+  [
     ['liga', 'Standard'],
     ['rlig', 'Required'],
     ['dlig', 'Discretionary'],
     ['hlig', 'Historical']
   ]
-};
+];
 document.getElementById('sub-type').onchange = (evt)=>{
   document.getElementById('sub-feat').innerHTML = featByType[evt.target.value].map(feat=>`<option value="${feat[0]}">${feat[1]}</option>`).join('');
 };

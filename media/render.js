@@ -3,7 +3,7 @@ export function renderTTO(glyf, upe=256, size=256, guide=false, advance=0) {
   let path = '';
   let contour = [];
   for (let i=0; i<glyf.length; i++) {
-    contour.push({ x: glyf[i].x, y: sizing-glyf[i].y, onCurve: glyf[i].onCurve!==false });
+    contour.push({ x: Number(glyf[i].x), y: sizing-Number(glyf[i].y), onCurve: glyf[i].onCurve });
     if (glyf[i].countourEnd) { path += contourPath(contour); contour = []; }
   }
   if (contour.length) path += contourPath(contour);
@@ -14,25 +14,25 @@ export function renderTTO(glyf, upe=256, size=256, guide=false, advance=0) {
   <path fill-rule="evenodd" d="${path}"/>
 </svg>`;
 }
-function contourPath(pts) {
-  let n = pts.length;
-  if (n===0) return '';
-  let s = pts.findIndex(p=>p.onCurve);
-  let start = s===-1?{ x: (pts[n-1].x+pts[0].x)/2, y: (pts[n-1].y+pts[0].y)/2 }:pts[s];
-  let begin = s===-1?0:s+1;
-  let total = s===-1?n:n-1;
-  let d = `M ${start.x} ${start.y} `;
-  let ctrl = null;
-  for (let k=0; k<total; k++) {
-    let p = pts[(begin+k)%n];
-    if (p.onCurve) {
-      if (ctrl) { d += `Q ${ctrl.x} ${ctrl.y} ${p.x} ${p.y} `; ctrl = null; }
-      else d += `L ${p.x} ${p.y} `;
+function contourPath(points) {
+  let count = points.length;
+  if (count===0) return '';
+  let firstOnCurve = points.findIndex(point=>point.onCurve);
+  let start = firstOnCurve===-1?{ x: (points[count-1].x+points[0].x)/2, y: (points[count-1].y+points[0].y)/2 }:points[firstOnCurve];
+  let begin = firstOnCurve===-1?0:firstOnCurve+1;
+  let steps = firstOnCurve===-1?count:count-1;
+  let data = `M ${start.x} ${start.y} `;
+  let control = null;
+  for (let i=0; i<steps; i++) {
+    let point = points[(begin+i)%count];
+    if (point.onCurve) {
+      if (control) { data += `Q ${control.x} ${control.y} ${point.x} ${point.y} `; control = null; }
+      else data += `L ${point.x} ${point.y} `;
     } else {
-      if (ctrl) d += `Q ${ctrl.x} ${ctrl.y} ${(ctrl.x+p.x)/2} ${(ctrl.y+p.y)/2} `;
-      ctrl = p;
+      if (control) data += `Q ${control.x} ${control.y} ${(control.x+point.x)/2} ${(control.y+point.y)/2} `;
+      control = point;
     }
   }
-  if (ctrl) d += `Q ${ctrl.x} ${ctrl.y} ${start.x} ${start.y} `;
-  return d+'Z ';
+  if (control) data += `Q ${control.x} ${control.y} ${start.x} ${start.y} `;
+  return data+'Z ';
 }

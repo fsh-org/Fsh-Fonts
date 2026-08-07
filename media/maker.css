@@ -18,6 +18,7 @@ nav a {
   display: flex;
   align-items: center;
   color: var(--text-1);
+  text-decoration: none;
 }
 main {
   flex: 1;

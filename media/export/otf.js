@@ -444,13 +444,14 @@ int16	caretOffset	The amount by which a slanted highlight on a glyph needs to be
     }
     for (let i=0; i<sb.length; i++) {
       view.setUint16(sb[i].lookup, offset-lookstart, false);
+      sb[i].lookup = offset
       view.setUint16(offset, sb[i].type, false); // lookupType
       view.setUint16(offset+2, 0, false); // lookupFlag
-      view.setUint16(offset+4, 0, false); // TODO: subTableCount
-      //view.setUint16(offset+2, 0, false); // TODO: subtableOffsets
-      offset += 6;
+      view.setUint16(offset+4, 1, false); // subTableCount
+      view.setUint16(offset+6, 0, false); // subtableOffsets (temp)
+      offset += 8;
     }
-/*Offset16	subtableOffsets[subTableCount]	Array of offsets to lookup subtables, from beginning of Lookup table.*/
+    // TODO: Subtables
     return offset;
   }
 };

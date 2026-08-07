@@ -33,10 +33,10 @@
         <option value="2">Multiple (A->BB)</option>
         <option value="3">Alternate (A->a)</option>
         <option value="4" selected>Ligature (AA->B)</option>
-      </select></label>
-      <label>Feature: <select id="sub-feat"></select></label>
-      <label>In: <input></label>
-      <label>Out: <input></label>
+      </select></label><br>
+      <label>Feature: <select id="sub-feat"></select></label><br>
+      <label>In: <input></label><br>
+      <label>Out: <input></label><br>
       <button id="sub-make">Create</button>
     </dialog>
     <dialog id="edit-glyph">
@@ -49,7 +49,7 @@
       </div>
     </dialog>
     <nav>
-      <a>
+      <a href="/">
         <img src="https://fsh.plus/fsh.png" width="50" height="50" alt="Fsh logo">
         <h1>Fsh Fonts</h1>
       </a>
@@ -59,7 +59,7 @@
     </nav>
     <main>
       <div data-page="settings">
-        <strong>Style</strong><br>
+        <h2>Style</h2>
         <label>Weight: <input id="style-weight" type="range" min="1" max="1000" value="400"></label><span id="preview-weight">400 Normal</span><br>
         <label>Italic: <input id="style-italic" type="checkbox"></label><br>
         <label>Italic angle: <input id="style-italicAngle" type="number" value="-12.5" min="-360" max="360" step="0.5"></label><br>
@@ -86,7 +86,7 @@
           <label>Superscript X offset: <input id="style-supXOff" type="number" value="0"></label><br>
           <label>Superscript Y offset: <input id="style-supYOff" type="number" value="0"></label>
         </details><br>
-        <strong>Strings</strong><br>
+        <h2>Strings</h2>
         <label>Family: <input id="string-family" placeholder="Fontex"></label><br>
         <label>Subfamily: <input id="string-subfamily" placeholder="Regular"></label><br>
         <label>Version: <input id="string-version" placeholder="Version 1.0"></label><br>
@@ -97,7 +97,7 @@
         <label for="string-license">License:</label><br>
         <textarea id="string-license"></textarea><br>
         <label>Sample text: <input id="string-sample" placeholder="The quick brown fox jumps over the lazy dog"></label><br><br>
-        <strong>Other</strong><br>
+        <h2>Other</h2>
         <label>Include glyph names: <input id="glyphNames" type="checkbox" checked></label><br>
         <label>Tag: <select id="tag">
           <option value="FSH ">FSH</option>

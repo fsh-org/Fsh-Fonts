@@ -66,36 +66,48 @@ const featByType = [
   [
     ['subs', 'Subscript'],
     ['sups', 'Superscript'],
+    ['sinf', 'Scientific inferiors'],
     ['zero', 'Slashed zero'],
     ['smcp', 'Small capitals'],
+    ['c2sc', 'Caps to small caps'],
+    ['pcap', 'Petite caps'],
+    ['c2pc', 'Caps to petite caps'],
+    ['unic', 'Unicase'],
+    ['titl', 'Titling'],
     ['locl', 'Localized'],
     ['trad', 'Traditional'],
-    ['hist', 'Historical']
+    ['hist', 'Historical'],
+    ['rvrn', 'Required']
   ],
   [
-    ['ccmp', 'Decompose'],
-    ['frac', 'Fractions']
+    ['ccmp', 'Decompose']
   ],
   [
     ['salt', 'Stylistic'],
     ['rand', 'Randomize'],
-    ['aalt', 'All alternates']
+    ['aalt', 'All alternates'],
+    ['nalt', 'Alternate annotation']
   ],
   [
     ['liga', 'Standard'],
     ['rlig', 'Required'],
     ['dlig', 'Discretionary'],
-    ['hlig', 'Historical']
+    ['hlig', 'Historical'],
+    ['frac', 'Fractions'],
+    ['afrc', 'Alternative fractions']
   ]
 ];
-document.getElementById('sub-type').onchange = (evt)=>{
-  document.getElementById('sub-feat').innerHTML = featByType[evt.target.value].map(feat=>`<option value="${feat[0]}">${feat[1]}</option>`).join('');
+let subtype = document.getElementById('sub-type');
+let subfeat = document.getElementById('sub-feat');
+subtype.onchange = ()=>{
+  subfeat.innerHTML = featByType[subtype.value].map(feat=>`<option value="${feat[0]}">${feat[1]}</option>`).join('');
 };
+subtype.onchange();
 document.getElementById('sub-make').onclick = ()=>{
   let charseq = prompt('Character sequence');
   if (!charseq) return;
-  let type = parseInt(document.getElementById('sub-type').value);
-  let feature = document.getElementById('sub-feat').value;
+  let type = parseInt(subtype.value);
+  let feature = subfeat.value;
   substitutions.push({
     type, feature,
     name: `${feature}/${type} ${charseq}`,

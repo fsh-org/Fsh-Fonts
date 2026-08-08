@@ -1,17 +1,18 @@
 export function renderTTO(glyf, upe=256, size=256, guide=false, advance=0) {
   let sizing = guide?Math.max(upe,advance):upe;
   let path = '';
-  let contour = [];
+  let points = [];
   for (let i=0; i<glyf.length; i++) {
-    contour.push({ x: Number(glyf[i].x), y: sizing-Number(glyf[i].y), onCurve: glyf[i].onCurve });
-    if (glyf[i].countourEnd) { path += contourPath(contour); contour = []; }
+    points.push({ x: Number(glyf[i].x), y: sizing-Number(glyf[i].y), onCurve: glyf[i].onCurve });
+    if (glyf[i].countourEnd) { path += contourPath(points); points = []; }
   }
-  if (contour.length) path += contourPath(contour);
+  if (points.length) path += contourPath(points);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${sizing} ${sizing}">
   ${guide?`<rect x="0" y="0" width="1" height="${sizing}"/>
-<rect x="0" y="${sizing}" width="${sizing}" height="1"/>
-<rect x="${advance}" y="0" width="1" height="${sizing}"/>`:''}
+  <rect x="0" y="${sizing}" width="${sizing}" height="1"/>
+  <rect x="${advance}" y="0" width="1" height="${sizing}"/>`:''}
   <path fill-rule="evenodd" d="${path}"/>
+  ${guide?glyf.map(p=>`<circle cx="${p.x}" cy="${sizing-p.y}" r="${upe/64}" fill="var(--${p.onCurve?'blue':'red'}-1)"/>`).join(''):''}
 </svg>`;
 }
 function contourPath(points) {

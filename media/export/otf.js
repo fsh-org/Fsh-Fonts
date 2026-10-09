@@ -201,7 +201,7 @@ const tableGen = {
     view.setUint32(offset+8, 0, false); // checksumAdjustment (temp)
     view.setUint32(offset+12, 0x5F0F3CF5, false); // magicNumber
     view.setUint16(offset+16, 3, false); // flags
-    view.setUint16(offset+18, 256, false); // TODO: unitsPerEm
+    view.setUint16(offset+18, settings.upe, false); // unitsPerEm
     view.setBigInt64(offset+20, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // created
     view.setBigInt64(offset+28, BigInt(Math.floor(Date.now()/1000))+2082844800n, false); // modified
     view.setInt16(offset+36, shareddata.minX, false); // xMin

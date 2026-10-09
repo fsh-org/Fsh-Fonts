@@ -7,6 +7,9 @@ window.showPage('settings');
 // Settings
 const weightNames = ['Thin','Thin','Extra-light','Light','Normal','Medium','Semi-bold','Bold','Extra-bold','Black','Black'];
 const widthNames = ['Gay','Ultra-condensed','Extra-condensed','Condensed','Semi-condensed','Medium','Semi-expanded','Expanded','Extra-expanded','Ultra-expanded'];
+document.getElementById('style-upe').oninput = (evt)=>{
+  document.getElementById('preview-upe').innerText = 1<<evt.target.value;
+};
 document.getElementById('style-weight').oninput = (evt)=>{
   document.getElementById('preview-weight').innerText = evt.target.value+' '+weightNames[Math.round(evt.target.value/100)];
 };
@@ -36,7 +39,7 @@ let glyphs = [{
 let substitutions = [];
 function showGlyphLists() {
   let disp = (gl,idx,where)=>`<button onclick="window.editGlyf(${idx}, '${where}')">
-  ${renderTTO(gl.glyf, 256, 100)}
+  ${renderTTO(gl.glyf, 1<<document.getElementById('style-upe').value, 100)}
   <span>${gl.name}${gl.char!==''&&gl.char!==gl.name?` (${gl.char})`:''}</span>
 </button>`;
   document.getElementById('glyph-list').innerHTML = glyphs.map((gl,idx)=>disp(gl,idx,'glyphs')).join('');
@@ -127,7 +130,7 @@ window.editGlyf = (idx, where)=>{
   let t = glyphs;
   if (where==='substitutions') t = substitutions;
   editModal.showModal();
-  editModal.querySelector('.contain').innerHTML = renderTTO(t[idx].glyf, 256, 256, true, t[idx].advance);
+  editModal.querySelector('.contain').innerHTML = renderTTO(t[idx].glyf, 1<<document.getElementById('style-upe').value, 256, true, t[idx].advance);
   editModal.querySelector('h2').innerText = `${t[idx].name}${t[idx].char!==''&&t[idx].char!==t[idx].name?` (${t[idx].char})`:''}`;
   editModal.querySelector('input').value = t[idx].name;
   editModal.querySelector('input[type="number"]').value = t[idx].advance;
@@ -138,6 +141,7 @@ window.exportFont = ()=>{
   let family = document.getElementById('string-family').value||'Font';
   let subfamily = document.getElementById('string-subfamily').value||'Regular';
   let buffer = generateOTF({
+    upe: 1<<document.getElementById('style-upe').value,
     weight: document.getElementById('style-weight').value,
     italic: document.getElementById('style-italic').checked,
     italicAngle: document.getElementById('style-italicAngle').value,
